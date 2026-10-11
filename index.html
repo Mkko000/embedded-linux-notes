@@ -620,6 +620,39 @@ body.el-term-open{padding-bottom:min(48vh,460px)}
 .dtoks{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .dtk{display:inline-flex;flex-direction:column;align-items:center;border:1px dashed color-mix(in srgb,#0ea5e9 50%,var(--line));border-radius:10px;padding:4px 8px;background:var(--card);max-width:16em}
 .dtk small{direction:rtl;font-size:.82em;color:var(--muted);text-align:center;line-height:1.35}
+/* ---- widgets (modules 12-29) ---- */
+.wbox,.gstep,.tracer,.preds{border:1px solid var(--line);border-radius:14px;padding:.8rem 1rem;margin:1rem 0;background:color-mix(in srgb,var(--accent) 4%,var(--card))}
+.wbox h4,.gstep h4,.tracer h4{margin:.1rem 0 .6rem}
+.wbox .row,.gstep .row,.tracer .row,.pred .row{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;margin:.4rem 0}
+.wbox button,.gstep button,.tracer button,.pred button{font:inherit;font-size:.85rem;padding:.25rem .65rem;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text);cursor:pointer}
+.wbox button:hover,.gstep button:hover,.tracer button:hover,.pred button:hover{border-color:var(--accent)}
+.wbox input:not([type=checkbox]),.wbox select,.wbox textarea,.pred textarea{font-family:ui-monospace,monospace;font-size:.92rem;padding:.3rem .5rem;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text)}
+.sn-in,.cr-in,.sp-scr{min-width:min(320px,100%);flex:1}
+.gs-rail{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.4rem}.gs-dot{width:2rem;height:2rem;border-radius:50%!important;padding:0!important}
+.gs-dot.on{background:color-mix(in srgb,var(--accent) 25%,var(--card))!important}.gs-dot.cur{background:var(--accent)!important;color:#fff!important}
+.gs-out{min-height:4rem;background:var(--card);border-radius:10px;padding:.6rem .8rem}.gs-item{margin-bottom:.6rem}.gs-anim{animation:el-fade .35s ease-out}
+@keyframes el-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.tr-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:.7rem}@media (max-width:760px){.tr-grid{grid-template-columns:1fr}}
+.tr-code{max-height:22rem;overflow:auto;background:var(--card);border-radius:10px;padding:.4rem 0;font-family:ui-monospace,monospace;font-size:.88rem;position:relative}
+.tr-l{display:flex;gap:.6rem;padding:0 .6rem;white-space:pre}.tr-l code{background:none;padding:0}.tr-n{color:var(--muted);min-width:1.6rem;text-align:right;user-select:none}
+.tr-l.cur{background:color-mix(in srgb,#e09b12 28%,transparent);box-shadow:inset 3px 0 #e09b12}
+.tr-side>div{background:var(--card);border-radius:10px;padding:.45rem .6rem;margin-bottom:.45rem;font-size:.88rem}.tr-lab{color:var(--muted);font-size:.78rem}
+.tr-vars{display:flex;gap:.35rem;flex-wrap:wrap;min-height:2rem}.tr-v{font-family:ui-monospace,monospace;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:.05rem .4rem}.tr-v.ch{border-color:#1f9d55;background:color-mix(in srgb,#1f9d55 18%,var(--bg))}
+.tr-out pre{margin:.3rem 0 0;max-height:10rem;overflow:auto;white-space:pre-wrap;font-size:.85rem}
+.preds .decode-t{font-weight:700;margin-bottom:.5rem}.pred{border-top:1px dashed var(--line);padding:.6rem 0}.pred:first-of-type{border-top:0}
+.pr-code{background:var(--card);border-radius:10px;padding:.5rem .7rem;font-size:.88rem;overflow:auto}.pr-in{width:100%;box-sizing:border-box}
+.pred.ok .pr-in{border-color:#1f9d55}.pred.bad .pr-in{border-color:#d64545}.pr-hint{font-size:.85rem;color:var(--muted)}.pr-args{font-size:.85rem;margin:.2rem 0}
+.sn-t{border-collapse:collapse;width:100%;margin:.4rem 0;font-size:.9rem}.sn-t th,.sn-t td{border-bottom:1px solid var(--line);padding:.3rem .5rem;text-align:left}.sn-b{font-family:ui-monospace,monospace;font-size:.8rem;letter-spacing:.02em;word-break:break-all}
+.sn-net{color:#2563eb;font-weight:700}.sn-host{color:#d97706;font-weight:700}[data-theme="dark"] .sn-net{color:#7aa7ff}
+.cr-out .sn-t td,.cr-out .sn-t th{text-align:right}.cr-next ol{margin:.3rem 1.2rem;font-family:ui-monospace,monospace;font-size:.88rem}
+.err-l{color:#d64545;padding:.4rem 0}.warn-l{background:color-mix(in srgb,#e09b12 14%,var(--card));border-radius:10px;padding:.5rem .7rem;margin:.4rem 0}
+.wbox .pbx{background:color-mix(in srgb,#e09b12 10%,var(--card));border-radius:10px;padding:.5rem .7rem}
+.sp-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}@media (max-width:760px){.sp-grid{grid-template-columns:1fr}}
+.sp-grid textarea{width:100%;box-sizing:border-box}.sp-out{background:var(--card);border-radius:10px;padding:.5rem;min-height:9rem;margin:0;white-space:pre-wrap;font-size:.85rem}.sp-err{color:#d64545;display:block}
+.sp-exs button{font-family:ui-monospace,monospace;font-size:.78rem}.sp-cmd{font-size:.85rem;color:var(--muted);margin-top:.3rem}
+.tr-l code{border:0!important;background:none!important;white-space:pre!important;padding:0!important;box-shadow:none!important;font-size:inherit}
+.pb-out div.pbx{display:block}
+.pr-code{direction:ltr;text-align:left}
 </style></head><body>
 <nav class="nav"><div class="nav-in"><a class="brand" href="#top">Embedded Linux <span>· الكورس كامل</span></a><a class="nl" href="#d1"><span class="nn">1</span> OS و Kernel</a><a class="nl" href="#stack"><span class="nn">🔬</span> Embedded Linux من جوه</a><a class="nl" href="#d2"><span class="nn">2</span> Shell و Paths</a><a class="nl" href="#think"><span class="nn">🧠</span> فكّر في الأوامر</a><a class="nl" href="#d3"><span class="nn">3</span> cp · mv · rm</a><a class="nl" href="#d4"><span class="nn">4</span> Wildcards</a><a class="nl" href="#d5"><span class="nn">5</span> Help · Text · Redirection</a><a class="nl" href="#d6"><span class="nn">6</span> grep · Pipes · Quotes</a><a class="nl" href="#d7"><span class="nn">7</span> Regex</a><a class="nl" href="#d8"><span class="nn">8</span> nano · vim · gedit</a><a class="nl" href="#editors"><span class="nn">✍️</span> Vim/Neovim من جوه</a><a class="nl" href="#d9"><span class="nn">9</span> Users & Groups</a><a class="nl" href="#d10"><span class="nn">10</span> Permissions</a><a class="nl" href="#d11"><span class="nn">11</span> find & locate</a><a class="nl" href="#d12"><span class="nn">12</span> Shell & أول script</a><a class="nl" href="#d13"><span class="nn">13</span> Environment & init files</a><a class="nl" href="#d14"><span class="nn">14</span> cut · paste · sort · tr · diff · patch</a><a class="nl" href="#d15"><span class="nn">15</span> sed & awk</a><a class="nl" href="#d16"><span class="nn">16</span> Compression & tar</a><a class="nl" href="#d17"><span class="nn">17</span> Filesystems & Partitions</a><a class="nl" href="#d18"><span class="nn">18</span> Packages: dpkg/apt</a><a class="nl" href="#d19"><span class="nn">19</span> Processes</a><a class="nl" href="#d20"><span class="nn">20</span> Signals & kill</a><a class="nl" href="#d21"><span class="nn">21</span> at · cron · daemons</a><a class="nl" href="#d22"><span class="nn">22</span> Logs</a><a class="nl" href="#d23"><span class="nn">23</span> Boot بالتفصيل</a><a class="nl" href="#d24"><span class="nn">24</span> Networking basics</a><a class="nl" href="#d25"><span class="nn">25</span> ip · ping · ssh</a><a class="nl" href="#d26"><span class="nn">26</span> Bash conditions</a><a class="nl" href="#d27"><span class="nn">27</span> Arithmetic & loops</a><a class="nl" href="#d28"><span class="nn">28</span> Arrays & strings</a><a class="nl" href="#d29"><span class="nn">29</span> Functions · trap · debug</a><a class="nl" href="#sheet"><span class="nn">★</span> Cheat-sheet</a><a class="nl" href="#gloss"><span class="nn">📖</span> Glossary</a><a class="nl" href="#guide"><span class="nn">✔</span> إزاي تجاوب أي سؤال</a><a class="nl" href="#flash"><span class="nn">🃏</span> Flashcards</a><a class="nl" href="#boss"><span class="nn">👑</span> Boss Challenge</a><a class="nl" href="#dash"><span class="nn">🏆</span> لوحة التقدم</a><button class="theme-btn" id="themeBtn">🌙 غامق</button></div><div class="progress" id="prog"></div></nav>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker></defs></svg><main id="top"><div class="hero"><div class="badges"><span class="badge">Embedded Linux</span><span class="badge">by Mohammed El Sisi</span><span class="badge">29 Module · كورس تفاعلي</span></div>
@@ -8697,6 +8730,97 @@ function reExplain(){var pat=$('#rePat');if(!pat||$('#reExplain'))return;var box
 P.init=function(){boot();sched();permBoard();reExplain();};
 })();
 
+/* widgets: step-through (gstep), bash tracer, predict-the-output, subnet calculator, cron explainer, sed/awk playground */
+(function(){'use strict';var EL=window.EL,$=EL.$,$$=EL.$$,esc=EL.esc,h=EL.h;var W=EL.widgets={};
+function once(id,n,why){if(EL.addXPOnce)EL.addXPOnce(id,n,why);}
+/* ---------- gstep ---------- */
+function gstep(el){var st=JSON.parse(el.getAttribute('data-steps')||'[]'),i=-1,rail=$('.gs-rail',el),out=$('.gs-out',el),n=$('.gs-n',el);
+  rail.innerHTML=st.map(function(s,k){return '<button class="gs-dot" data-k="'+k+'" title="'+esc(s[0])+'">'+(k+1)+'</button>';}).join('');
+  function show(k,all){i=Math.max(-1,Math.min(st.length-1,k));$$('.gs-dot',rail).forEach(function(b,j){b.classList.toggle('on',j<=i);b.classList.toggle('cur',j===i);});
+    if(all){out.innerHTML=st.map(function(s){return '<div class="gs-item"><b>'+esc(s[0])+'</b>\n'+esc(s[1])+'</div>';}).join('');}
+    else out.innerHTML=i<0?'<span class="muted">اضغط Next ▶ عشان تمشي خطوة خطوة</span>':'<div class="gs-item gs-anim"><b>'+esc(st[i][0])+'</b>\n'+esc(st[i][1])+'</div>';
+    n.textContent=(i+1)+' / '+st.length;if(i===st.length-1)once('gs_'+el.id,5,'مشيت كل خطوات '+(($('h4',el)||{}).textContent||''));}
+  $('.gs-next',el).onclick=function(){show(i+1);};$('.gs-prev',el).onclick=function(){show(i-1);};$('.gs-all',el).onclick=function(){show(st.length-1,true);};
+  rail.onclick=function(e){var b=e.target.closest('.gs-dot');if(b)show(+b.getAttribute('data-k'));};show(-1);}
+/* ---------- tracer ---------- */
+var enc=new TextEncoder(),dec=new TextDecoder();
+function tracer(el){var d=JSON.parse(el.getAttribute('data-tr')),S=d.steps,ob=enc.encode(d.out),i=-1,t=null;
+  var cmd=$('.tr-cmd',el),vars=$('.tr-vars',el),pre=$('.tr-out pre',el),n=$('.tr-n2',el),prevVars={};
+  function parseVars(s){var o={},re=/(\w+)=(\([^)]*\)|\S*)/g,m;while((m=re.exec(s)))o[m[1]]=m[2];return o;}
+  function show(k){i=Math.max(-1,Math.min(S.length-1,k));$$('.tr-l',el).forEach(function(l){l.classList.remove('cur');});
+    if(i<0){cmd.innerHTML='<span class="muted">اضغط Step ▶ — كل ضغطة = bash بينفّذ أمر واحد</span>';vars.innerHTML='';pre.textContent='';n.textContent='0 / '+S.length;prevVars={};return;}
+    var s=S[i];var L=$('.tr-l[data-l="'+s[0]+'"]',el);if(L){L.classList.add('cur');var box=$('.tr-code',el);if(L.offsetTop<box.scrollTop||L.offsetTop>box.scrollTop+box.clientHeight-30)box.scrollTop=L.offsetTop-40;}
+    cmd.innerHTML='<span class="tr-lab">line '+(s[0]||'—')+' ▸</span> <code>'+esc(s[1])+'</code>';
+    var cur=parseVars(s[2]),pv=i>0?parseVars(S[i-1][2]):{};
+    vars.innerHTML=Object.keys(cur).map(function(k){var v=cur[k]==='∅'?'<i class="muted">unset</i>':esc(cur[k]);var ch=pv[k]!==undefined&&pv[k]!==cur[k];return '<span class="tr-v'+(ch?' ch':'')+'"><b>'+esc(k)+'</b>='+v+'</span>';}).join('');
+    pre.textContent=dec.decode(ob.slice(0,s[3]));if(s[1]==='(end)')pre.textContent=d.out;n.textContent=(i+1)+' / '+S.length;
+    if(i===S.length-1)once('tr_'+el.id,8,'تتبّعت script لحد الآخر');}
+  $('.tr-next',el).onclick=function(){show(i+1);};$('.tr-prev',el).onclick=function(){show(i-1);};
+  $('.tr-reset',el).onclick=function(){clearInterval(t);t=null;show(-1);};
+  $('.tr-run',el).onclick=function(){if(t){clearInterval(t);t=null;this.textContent='Run all';return;}var b=this;b.textContent='⏸';if(i>=S.length-1)show(-1);t=setInterval(function(){if(i>=S.length-1){clearInterval(t);t=null;b.textContent='Run all';return;}show(i+1);},650);};
+  show(-1);}
+/* ---------- predict ---------- */
+function norm(s){return s.replace(/\r/g,'').split('\n').map(function(l){return l.replace(/\s+$/,'');}).join('\n').replace(/\n+$/,'');}
+function pred(el){var exp=el.getAttribute('data-exp'),ta=$('.pr-in',el),res=$('.pr-res',el);
+  $('.pr-chk',el).onclick=function(){var a=norm(ta.value),b=norm(exp);if(a===b){res.innerHTML='✅ مظبوط!';el.classList.add('ok');el.classList.remove('bad');once('pr_'+el.id,10,'توقّعت الـ output صح');}
+    else{var al=a.split('\n'),bl=b.split('\n'),k=0;while(k<al.length&&al[k]===bl[k])k++;res.innerHTML='❌ أول اختلاف في سطر '+(k+1)+(bl[k]!==undefined?' — المتوقع يبدأ بـ <code>'+esc((bl[k]||'').slice(0,40))+'</code>':' — عندك سطور زيادة');el.classList.add('bad');}};
+  $('.pr-show',el).onclick=function(){ta.value=exp.replace(/\n$/,'');res.textContent='👀 ده الـ output الحقيقي من bash';};}
+/* ---------- subnet calculator ---------- */
+function ip2n(s){var p=s.split('.');if(p.length!==4||p.some(function(x){return !/^\d{1,3}$/.test(x)||+x>255;}))return null;return ((+p[0]<<24)>>>0)+(+p[1]<<16)+(+p[2]<<8)+(+p[3]);}
+function n2ip(n){return [n>>>24,(n>>>16)&255,(n>>>8)&255,n&255].join('.');}
+function bin(n,pre){var b=(n>>>0).toString(2);while(b.length<32)b='0'+b;var o='';for(var i=0;i<32;i++){o+=(i<pre?'<span class="sn-net">':'<span class="sn-host">')+b[i]+'</span>';if(i%8===7&&i<31)o+='.';}return o;}
+function subnet(el){el.classList.add('wbox');el.innerHTML='<h4>🧮 Subnet calculator — اكتب IP/prefix وشوف كل حاجة بالـ binary</h4><div class="row" dir="ltr"><input class="sn-in" value="192.168.1.77/26" spellcheck="false"><button class="sn-ex" data-v="10.0.0.5/8">10.0.0.5/8</button><button class="sn-ex" data-v="172.20.3.9/12">172.20.3.9/12</button><button class="sn-ex" data-v="192.168.10.130/27">/27</button><button class="sn-ex" data-v="169.254.12.3/16">169.254/16</button><button class="sn-ex" data-v="192.168.1.1/30">/30</button></div><div class="sn-out" dir="ltr"></div>';
+  var inp=$('.sn-in',el),out=$('.sn-out',el);
+  function go(){var m=/^\s*([\d.]+)\s*\/\s*(\d{1,2})\s*$/.exec(inp.value),ip=m&&ip2n(m[1]),p=m?+m[2]:-1;if(!m||ip==null||p>32){out.innerHTML='<div class="err-l" dir="rtl">اكتب حاجة زي <code>192.168.1.77/26</code></div>';return;}
+    var mask=p===0?0:(0xFFFFFFFF<<(32-p))>>>0,net=(ip&mask)>>>0,bc=(net|(~mask>>>0))>>>0,hosts=p>=31?(p===32?1:2):Math.pow(2,32-p)-2;
+    var first=p>=31?net:net+1,last=p>=31?bc:bc-1,cls=(ip>>>24)<128?'A':(ip>>>24)<192?'B':(ip>>>24)<224?'C':(ip>>>24)<240?'D (multicast)':'E';
+    var priv=((ip>>>24)===10)||((ip>>>20)===(172<<4|1))||((ip>>>16)===(192<<8|168))?'private (RFC 1918) — مش بيتعمله route على الإنترنت ⇒ محتاج NAT':((ip>>>16)===(169<<8|254))?'link-local (APIPA) — الجهاز ملقاش DHCP':((ip>>>24)===127)?'loopback':'public';
+    var rows=[['Address',n2ip(ip),bin(ip,p)],['Netmask',n2ip(mask)+' = /'+p,bin(mask,p)],['Network',n2ip(net),bin(net,p)],['Broadcast',p>=31?'— (مفيش في /31 و /32)':n2ip(bc),bin(bc,p)]];
+    out.innerHTML='<table class="sn-t">'+rows.map(function(r){return '<tr><th>'+r[0]+'</th><td><b>'+r[1]+'</b></td><td class="sn-b">'+r[2]+'</td></tr>';}).join('')+'</table>'+
+      '<div class="pb-out"><div><span>Usable hosts</span><b>'+hosts.toLocaleString('en')+'</b></div><div><span>Range</span><b>'+n2ip(first)+' – '+n2ip(last)+'</b></div><div><span>Block size (آخر octet متغير)</span><b>'+(p>=24?Math.pow(2,32-p):p>=16?Math.pow(2,24-p)+' (3rd octet)':'—')+'</b></div><div><span>Class (تاريخي)</span><b>'+cls+'</b></div><div class="wide pbx">'+priv+'. <span class="sn-net">الأزرق</span> = network bits (الـ '+p+' bit الأولانيين)، <span class="sn-host">البرتقالي</span> = host bits ('+(32-p)+'). الـ network = AND مع الـ mask، والـ broadcast = كل الـ host bits بـ 1.</div></div>';
+    once('subnet_calc',5,'جرّبت الـ subnet calculator');}
+  inp.addEventListener('input',go);$$('.sn-ex',el).forEach(function(b){b.onclick=function(){inp.value=b.getAttribute('data-v');go();};});go();}
+/* ---------- cron explainer ---------- */
+var DOWN=['الأحد','الاتنين','التلات','الأربع','الخميس','الجمعة','السبت'],MONN=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+var CN={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12,sun:0,mon:1,tue:2,wed:3,thu:4,fri:5,sat:6};
+function cfield(s,lo,hi,name){var set={},star=s==='*';s=s.toLowerCase().replace(/[a-z]{3}/g,function(w){if(CN[w]==null)throw 'اسم مش معروف: '+w;return CN[w];});
+  s.split(',').forEach(function(part){var m=/^(\*|\d+(?:-\d+)?)(?:\/(\d+))?$/.exec(part);if(!m)throw 'الـ field «'+name+'» فيه صيغة غلط: '+part;var a=lo,b=hi,st=m[2]?+m[2]:1;
+    if(m[1]!=='*'){var r=m[1].split('-');a=+r[0];b=r[1]!=null?+r[1]:(m[2]?hi:a);}if(name==='DoW'&&b===7&&a<=7){}if(a<lo||b>(name==='DoW'?7:hi)||a>b||st<1)throw 'الـ field «'+name+'» برّه المدى ('+lo+'–'+hi+'): '+part;
+    for(var v=a;v<=b;v+=st)set[name==='DoW'&&v===7?0:v]=1;});return {set:set,star:star};}
+function cronExplain(f){var d={min:'الدقيقة',hr:'الساعة',dom:'يوم الشهر',mon:'الشهر',dow:'يوم الأسبوع'};return f;}
+function cronPlay(el){el.classList.add('wbox');el.innerHTML='<h4>⏰ cron explainer — اكتب الـ 5 fields وشوف هيشتغل امتى بالظبط</h4><div class="row" dir="ltr"><input class="cr-in" value="*/15 9-17 * * 1-5" spellcheck="false"><button class="cr-ex" data-v="0 2 * * *">0 2 * * *</button><button class="cr-ex" data-v="30 8 1 * *">30 8 1 * *</button><button class="cr-ex" data-v="5,10 0 10 * 1">5,10 0 10 * 1</button><button class="cr-ex" data-v="0 0 * * sun">@weekly</button><button class="cr-ex" data-v="0 */6 * jan-mar *">*/6 jan-mar</button></div><div class="cr-out"></div>';
+  var inp=$('.cr-in',el),out=$('.cr-out',el);
+  function go(){var raw=inp.value.trim(),sp={'@hourly':'0 * * * *','@daily':'0 0 * * *','@midnight':'0 0 * * *','@weekly':'0 0 * * 0','@monthly':'0 0 1 * *','@yearly':'0 0 1 1 *','@annually':'0 0 1 1 *'};if(sp[raw])raw=sp[raw];
+    var p=raw.split(/\s+/);if(raw==='@reboot'){out.innerHTML='<div class="pbx">@reboot ⇒ مرة واحدة لما الـ cron daemon يبدأ (بعد كل boot).</div>';return;}
+    if(p.length!==5){out.innerHTML='<div class="err-l">لازم 5 fields بالظبط: minute hour day-of-month month day-of-week (عندك '+p.length+')</div>';return;}
+    try{var F=[cfield(p[0],0,59,'minute'),cfield(p[1],0,23,'hour'),cfield(p[2],1,31,'DoM'),cfield(p[3],1,12,'month'),cfield(p[4],0,6,'DoW')];}catch(e){out.innerHTML='<div class="err-l">❌ '+esc(e)+'</div>';return;}
+    var names=['minute (0–59)','hour (0–23)','day of month (1–31)','month (1–12)','day of week (0–7, 0/7=الأحد)'];
+    function desc(k){var ks=Object.keys(F[k].set).map(Number).sort(function(a,b){return a-b;});if(F[k].star)return 'أي قيمة';var lab=k===3?ks.map(function(v){return MONN[v-1];}):k===4?ks.map(function(v){return DOWN[v];}):ks;return lab.length>12?lab.slice(0,12).join('، ')+'… ('+lab.length+' قيمة)':lab.join('، ');}
+    var orRule=!F[2].star&&!F[4].star;
+    var now=new Date(),t=new Date(now.getFullYear(),now.getMonth(),now.getDate(),now.getHours(),now.getMinutes()+1,0,0),hits=[],guard=0;
+    while(hits.length<6&&guard<600000){guard++;var dm=F[2].set[t.getDate()],dw=F[4].set[t.getDay()];var day=orRule?(dm||dw):((F[2].star||dm)&&(F[4].star||dw));
+      if(F[3].set[t.getMonth()+1]&&day&&F[1].set[t.getHours()]&&F[0].set[t.getMinutes()])hits.push(new Date(t));t=new Date(t.getTime()+60000);}
+    out.innerHTML='<table class="sn-t">'+p.map(function(x,k){return '<tr><th dir="ltr"><code>'+esc(x)+'</code></th><td>'+names[k]+'</td><td>'+esc(desc(k))+'</td></tr>';}).join('')+'</table>'+
+      (orRule?'<div class="pbx warn-l">⚠️ الـ day-of-month <b>و</b> الـ day-of-week الاتنين متحددين ⇒ cron بيعمل <b>OR</b>: يشتغل لو اليوم يطابق أي واحد فيهم (مش الاتنين مع بعض).</div>':'')+
+      '<div class="cr-next"><b>أقرب مرات تشغيل (بتوقيت جهازك):</b><ol dir="ltr">'+(hits.length?hits.map(function(d){return '<li>'+DOWN[d.getDay()]+' '+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+'</li>';}).join(''):'<li>مفيش ولا مرة في السنة الجاية (مثلاً 31 فبراير)</li>')+'</ol></div>';
+    once('cron_play',5,'جرّبت الـ cron explainer');}
+  inp.addEventListener('input',go);$$('.cr-ex',el).forEach(function(b){b.onclick=function(){inp.value=b.getAttribute('data-v');go();};});go();}
+/* ---------- sed / awk playground ---------- */
+var SEDEX=[['sed','s/ERROR/❌/','اعمل replace لأول match في كل سطر'],['sed','-n /WARN/p','اطبع سطور الـ WARN بس (-n يقفل الطباعة الأوتوماتيك)'],['sed','2,4d','امسح السطور من 2 لـ 4'],['sed','-E s/^([0-9-]+) ([0-9:]+)/\\2 \\1/','بدّل التاريخ والوقت بالـ groups'],['sed','/INFO/!d','سيب الـ INFO بس (! = عكس الـ address)'],['sed','1!G;h;$!d','اعكس الملف (زي tac) بالـ hold space'],
+  ['awk','{print $3}','الـ field التالت'],['awk','$3=="ERROR"{print $4, NR}','filter بالـ field'],['awk','{c[$3]++} END{for(k in c) print k, c[k]}','عدّ كل level'],['awk','{printf "%-6s %s\\n", $3, substr($2,1,5)}','تنسيق بـ printf']];
+var SAMPLE='2026-10-11 06:40:01 INFO  boot ok in 3.2s\n2026-10-11 06:41:12 WARN  temp 78C on cpu0\n2026-10-11 06:42:30 ERROR i2c-1 timeout addr 0x48\n2026-10-11 06:43:05 INFO  eth0 link up 100Mbps\n2026-10-11 06:44:51 ERROR spi0 crc mismatch\n2026-10-11 06:45:00 WARN  temp 85C on cpu0\n';
+function sedPlay(el){el.classList.add('wbox');el.innerHTML='<h4>🧪 sed / awk playground — نفس المحرك اللي في الـ terminal (متختبر قدام GNU sed و gawk)</h4><div class="row" dir="ltr"><select class="sp-tool"><option>sed</option><option>awk</option></select><input class="sp-scr" value="s/ERROR/❌/" spellcheck="false"><label><input type="checkbox" class="sp-n"> -n</label><label><input type="checkbox" class="sp-E"> -E</label><span class="sp-F"><label>-F <input class="sp-fs" size="3"></label></span></div><div class="row sp-exs"></div><div class="sp-grid" dir="ltr"><div><b>input</b><textarea class="sp-inp" rows="7" spellcheck="false"></textarea></div><div><b>output</b><pre class="sp-out"></pre></div></div><div class="sp-cmd" dir="ltr"></div>';
+  var tool=$('.sp-tool',el),scr=$('.sp-scr',el),inp=$('.sp-inp',el),out=$('.sp-out',el),cn=$('.sp-n',el),cE=$('.sp-E',el),fs=$('.sp-fs',el),cmdl=$('.sp-cmd',el);inp.value=SAMPLE;
+  $('.sp-exs',el).innerHTML=SEDEX.map(function(x,k){return '<button data-k="'+k+'" title="'+esc(x[2])+'">'+esc(x[0]+' '+x[1])+'</button>';}).join('');
+  function sync(){var a=tool.value==='awk';$('.sp-F',el).style.display=a?'':'none';cn.parentNode.style.display=a?'none':'';cE.parentNode.style.display=a?'none':'';}
+  function q(s){return "'"+s.replace(/'/g,"'\\''")+"'";}
+  function go(){sync();var s=scr.value,r;try{if(tool.value==='sed'){var n=cn.checked,E=cE.checked,m;while((m=/^\s*-(n|E|r)\s+/.exec(s))){if(m[1]==='n')n=true;else E=true;s=s.slice(m[0].length);}r=window.ELSed([s],inp.value,{n:n,E:E});cmdl.innerHTML='$ <code>sed '+(n?'-n ':'')+(E?'-E ':'')+esc(q(s))+' input.txt</code>';}
+      else{r=window.ELAwk(s,inp.value,{F:fs.value||null});cmdl.innerHTML='$ <code>awk '+(fs.value?'-F'+esc(q(fs.value))+' ':'')+esc(q(s))+' input.txt</code>';}}catch(e){r={out:'',err:String(e)};}
+    out.textContent=r.out;if(r.err){var e=h('span',{class:'sp-err'});e.textContent=r.err;out.appendChild(e);}if(!r.err&&s.length>3)once('sed_play',5,'جرّبت الـ sed/awk playground');}
+  $('.sp-exs',el).onclick=function(e){var b=e.target.closest('button');if(!b)return;var x=SEDEX[+b.getAttribute('data-k')];tool.value=x[0];var s=x[1];cn.checked=false;cE.checked=false;scr.value=s;go();};
+  [tool,scr,inp,cn,cE,fs].forEach(function(x){x.addEventListener('input',go);x.addEventListener('change',go);});go();}
+W.init=function(){$$('.gstep').forEach(gstep);$$('.tracer').forEach(tracer);$$('.pred').forEach(pred);var e;if((e=$('#subnetCalc')))subnet(e);if((e=$('#cronPlay')))cronPlay(e);if((e=$('#sedPlay')))sedPlay(e);};
+})();
 
 
 /* final boss challenge: timed mixed exam with score report */
@@ -8726,4 +8850,4 @@ B.init=function(){box=document.getElementById('bossBox');if(box)intro();};
 B._start=start;B._state=function(){return state;};B._finish=finish;
 })();
 
-(function(){function go(){var E=window.EL,t=['init'];try{E.init();E.term.init();E.renderMissions();E.renderQuizzes();E.flash.init();E.vim.init();E.play.init();E.boss.init();E.renderDash();}catch(e){console.error(e);}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',go);else go();})();</script></body></html>
+(function(){function go(){var E=window.EL,t=['init'];try{E.init();E.term.init();E.renderMissions();E.renderQuizzes();E.flash.init();E.vim.init();E.play.init();E.boss.init();E.renderDash();}catch(e){console.error(e);}['widgets','think'].forEach(function(k){try{E[k]&&E[k].init();}catch(e){console.error(e);}});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',go);else go();})();</script></body></html>
