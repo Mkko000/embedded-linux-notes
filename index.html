@@ -8437,8 +8437,8 @@ function reOf(self,raw){var o='',i=0,esc=function(x){return x.replace(/[.*+?^${}
   if(c==='$'){var r=self.lexDollar(raw,i);if(r){o+=String(r.val).split(SEP).join(' ');i=r.end;continue;}}
   o+=c;i++;}return o;}
 function expandHD(self,body){var out='',i=0;while(i<body.length){var c=body[i];if(c==='\\'&&/[$`\\]/.test(body[i+1]||'')){out+=body[i+1];i+=2;continue;}if(c==='$'||c==='`'){var r=self.lexDollar(body,i);if(r){out+=String(r.val).split(SEP).join(' ').replace(new RegExp(NOWORD,'g'),'');i=r.end;continue;}}out+=c;i++;}return out;}
-function snap(self){var s=self.cur(),S=self.S;return JSON.stringify({vars:s.vars,arrs:s.arrs||{},cwd:s.cwd,old:s.old,umask:s.umask,dirs:s.dirs,ro:s.ro||{},opts:S._opts||{},funcs:S.funcs||{},aliases:S.aliases||null,traps:S._traps||{},top:S._topArgs||[]});}
-function restore(self,j){var o=JSON.parse(j),s=self.cur(),S=self.S;s.vars=o.vars;s.arrs=o.arrs;s.cwd=o.cwd;s.old=o.old;s.umask=o.umask;s.dirs=o.dirs;s.ro=o.ro;S._opts=o.opts;S.funcs=o.funcs;if(o.aliases)S.aliases=o.aliases;S._traps=o.traps;S._topArgs=o.top;}
+function snap(self){var s=self.cur(),S=self.S;return JSON.stringify({exp:BI.expOf(s),vars:s.vars,arrs:s.arrs||{},cwd:s.cwd,old:s.old,umask:s.umask,dirs:s.dirs,ro:s.ro||{},opts:S._opts||{},funcs:S.funcs||{},aliases:S.aliases||null,traps:S._traps||{},top:S._topArgs||[]});}
+function restore(self,j){var o=JSON.parse(j),s=self.cur(),S=self.S;s.vars=o.vars;if(o.exp)s.exp=o.exp;s.arrs=o.arrs;s.cwd=o.cwd;s.old=o.old;s.umask=o.umask;s.dirs=o.dirs;s.ro=o.ro;S._opts=o.opts;S.funcs=o.funcs;if(o.aliases)S.aliases=o.aliases;S._traps=o.traps;S._topArgs=o.top;}
 function Ctx(W,o){this.W=W;this.o=o||{};this.stdin=null;this.script=null;this.cond=0;this.loops=0;this.depth=0;}
 function sub(ctx,ch){var c=Object.create(ctx);for(var k in ch)c[k]=ch[k];return c;}
 function collect(ctx){var buf={s:''};var W=function(t,e){if(e)ctx.W(t,1);else buf.s+=t;};return {W:W,buf:buf};}
@@ -8543,7 +8543,7 @@ function condEval(self,src){var toks=[],i=0,s=src;
       var a1=U.arith(self,L||'0'),b1=U.arith(self,R||'0');return {'-eq':a1===b1,'-ne':a1!==b1,'-lt':a1<b1,'-le':a1<=b1,'-gt':a1>b1,'-ge':a1>=b1}[op];}
     p++;return val(t)!=='';}
   if(!toks.length)throw {cerr:'syntax error near `]]\''};var v=oor();if(p<toks.length)throw {cerr:"syntax error in conditional expression: unexpected token `"+(toks[p].w||toks[p].op)+"'"};return v;}
-BI.condEval=condEval;BI.Ctl=Ctl;BI.Ctx=Ctx;BI.runList=runList;BI.runNode=runNode;BI.withRedir=withRedir;BI.words=words;BI.str1=str1;BI.snap=snap;BI.restore=restore;BI.sub=sub;BI.collect=collect;BI.E=E;BI.errMsg=errMsg;BI.readLine=readLine;BI.opts=opts;BI.funcs=funcs;BI.aliases=aliases;BI.MYB=MYB;BI.prevExec=prevExec;BI.prevCall=prevCall;BI.expandHD=expandHD;BI.posArgs=posArgs;BI.wtext=wtext;
+BI.condEval=condEval;BI.Ctl=Ctl;BI.Ctx=Ctx;BI.runList=runList;BI.runNode=runNode;BI.withRedir=withRedir;BI.words=words;BI.str1=str1;BI.expOf=function(s){if(!s.exp){s.exp={};Object.keys(s.vars||{}).forEach(function(k){s.exp[k]=1;});}return s.exp;};BI.snap=snap;BI.restore=restore;BI.sub=sub;BI.collect=collect;BI.E=E;BI.errMsg=errMsg;BI.readLine=readLine;BI.opts=opts;BI.funcs=funcs;BI.aliases=aliases;BI.MYB=MYB;BI.prevExec=prevExec;BI.prevCall=prevCall;BI.expandHD=expandHD;BI.posArgs=posArgs;BI.wtext=wtext;
 function runText(self,txt,ctx){var L;try{L=BI.parse(txt);}catch(e){if(e&&e.syn){E(self,ctx,'-bash: '+e.syn+'\n');return 2;}throw e;}return runList(self,L,ctx);}
 BI.runText=runText;
 })();
@@ -8589,11 +8589,11 @@ function runSimple(self,n,ctx,input,lastp){var raw=n.raw,inp=input,m;
   if(!argv.length){try{assigns.forEach(function(a){var e=a.indexOf('='),k=a.slice(0,e),v=a.slice(e+1);if(k[k.length-1]==='+'){k=k.slice(0,-1);v=(self.getVar(k)||'')+v;}BI.setVar(self,k,v);});}catch(er){if(er&&er.ro){E(self,ctx,'-bash: '+er.ro+': readonly variable\n');return 1;}throw er;}
     if(cmd.r.length)return BI.withRedir(self,rstr(cmd.r),ctx,inp,function(){return 0;});return 0;}
   var name=argv[0],args=argv.slice(1),rs=rstr(cmd.r);
-  function temp(fn){if(!assigns.length)return fn();var s=self.cur(),saved={};assigns.forEach(function(a){var e=a.indexOf('='),k=a.slice(0,e);saved[k]=Object.prototype.hasOwnProperty.call(s.vars,k)?s.vars[k]:undefined;s.vars[k]=a.slice(e+1);});
-    try{return fn();}finally{Object.keys(saved).forEach(function(k){if(saved[k]===undefined)delete s.vars[k];else s.vars[k]=saved[k];});}}
+  function temp(fn){if(!assigns.length)return fn();var s=self.cur(),saved={};assigns.forEach(function(a){var e=a.indexOf('='),k=a.slice(0,e);saved[k]=Object.prototype.hasOwnProperty.call(s.vars,k)?s.vars[k]:undefined;s.vars[k]=a.slice(e+1);var X=BI.expOf(s);if(!X[k]){X[k]=1;(saved.__unexp=saved.__unexp||[]).push(k);}});
+    try{return fn();}finally{var ux=saved.__unexp;delete saved.__unexp;if(ux){var X2=BI.expOf(s);ux.forEach(function(k){delete X2[k];});}Object.keys(saved).forEach(function(k){if(saved[k]===undefined)delete s.vars[k];else s.vars[k]=saved[k];});}}
   if(BI.funcs(self)[name]&&!(ctx.noFunc))return temp(function(){return BI.withRedir(self,rs,ctx,inp,function(cx,i2){return callFunc(self,name,args,cx,i2);});});
   if(BI.MYB[name]&&!(name==='exit'&&!ctx.script&&!ctx.subshell))return temp(function(){return BI.withRedir(self,rs,ctx,inp,function(cx,i2){return builtin(self,name,args,cx,i2);});});
-  var W=function(t,e){ctx.W(BI.errMsg(self,ctx,t),e);};var r2=self.runCmd(cmd,inp,W,ctx.o,true);return r2.rc;}
+  var W=function(t,e){ctx.W(BI.errMsg(self,ctx,t),e);};var r2=temp(function(){return self.runCmd(cmd,inp,W,ctx.o,true);});return r2.rc;}
 function plain(self,raw){var m=/^\s*(?:[A-Za-z_]\w*=\S*\s+)*([^\s;&|<>]+)/.exec(raw);if(!m)return true;var w=m[1];if(BI.MYB[w]||BI.funcs(self)[w])return false;if(w==='bash'||w==='sh')return true;return true;}
 BI.runSimpleImpl=runSimple;
 /* ---------- read ---------- */
@@ -8694,7 +8694,7 @@ function runSource(self,txt,disp,args,ctx,opt){var S=self.S,first=txt.split('\n'
   if(opt.check){if(synE){ctx.W(disp+': line '+synE.line+': '+synE.syn+'\n',1);return 2;}return 0;}
   var sj=opt.source?null:BI.snap(self);S._fr=S._fr||[];var frame=null;
   if(opt.source){if(args.length){frame={name:(BI.fr(self)||{}).name||'-bash',args:args,locals:{},src:1};S._fr.push(frame);}}
-  else{frame={name:disp,args:args,locals:{},script:1};S._fr.push(frame);S._traps={};var O={};if(opt.x)O.x=true;if(opt.e)O.e=true;S._opts=O;}
+  else{var cs=self.cur(),X=BI.expOf(cs),nv={};Object.keys(cs.vars).forEach(function(k){if(X[k]||/^(HOME|USER|LOGNAME|PWD|OLDPWD|SHELL|HOSTNAME|PATH|LANG|TERM|PS1|HISTSIZE)$/.test(k))nv[k]=cs.vars[k];});cs.vars=nv;cs.arrs={};S.funcs={};frame={name:disp,args:args,locals:{},script:1};S._fr.push(frame);S._traps={};var O={};if(opt.x)O.x=true;if(opt.e)O.e=true;S._opts=O;}
   var cx=BI.sub(ctx,{script:opt.source?ctx.script:{name:disp,posix:posix},func:opt.source?ctx.func:null,sourcing:!!opt.source,interactive:false,depth:(ctx.depth||0)+1,cond:0,lineBase:0,subshell:0});
   var rc=0;
   try{rc=BI.runList(self,L,cx);if(synE){var ln=(txt.split('\n')[synE.line-1]||'').trim();ctx.W((opt.source?'-bash: ':'')+disp+': line '+synE.line+': '+synE.syn+'\n'+(/near unexpected token/.test(synE.syn)?(opt.source?'-bash: ':'')+disp+': line '+synE.line+': `'+ln+"'\n":''),1);rc=2;}}catch(e){if(e instanceof Ctl){if(e.k==='exit'||e.k==='return')rc=e.n;else if(e.k==='limit'){BI.E(self,cx,'(simulator) الـ loop اتكرر أكتر من 5000 مرة — وقفناه. غالباً infinite loop: اتأكد إن الشرط بيتغير جوه الـ loop.\n');rc=1;}else rc=0;}else throw e;}
@@ -8747,7 +8747,7 @@ Sh.addCmds(['read','local','declare','typeset','readonly','set','trap','shift','
 function hx(line,H){if(line.indexOf('!')<0)return {l:line};var out='',i=0,q=null,changed=false;
   while(i<line.length){var c=line[i];if(c==="'"&&q!=='"'){q=q?null:"'";out+=c;i++;continue;}if(c==='"'&&q!=="'"){q=q?null:'"';out+=c;i++;continue;}
     if(c==='\\'){out+=line.substr(i,2);i+=2;continue;}
-    if(c==='!'&&q!=="'"&&line[i-1]!=='['){var r=line.slice(i+1),m,ev=null,tok;
+    if(c==='!'&&q!=="'"&&line[i-1]!=='['&&line[i-1]!=='{'){var r=line.slice(i+1),m,ev=null,tok;
       if(r[0]==='!'){ev=H[H.length-1];tok='!!';}else if((m=/^-(\d+)/.exec(r))){ev=H[H.length-(+m[1])];tok='!'+m[0];}else if((m=/^(\d+)/.exec(r))){ev=H[+m[1]-1];tok='!'+m[0];}
       else if(r[0]==='$'){var L=H[H.length-1]||'';var ws=L.trim().split(/\s+/);ev=ws[ws.length-1];tok='!$';if(ev==null)return {err:'-bash: !$: event not found\n'};out+=ev;i+=2;changed=true;continue;}
       else if((m=/^([A-Za-z_.\/][^\s;&|()<>"']*)/.exec(r))){for(var k=H.length-1;k>=0;k--){if(H[k].indexOf(m[1])===0){ev=H[k];break;}}tok='!'+m[1];}
@@ -8771,6 +8771,29 @@ P.run=function(line){var S=this.S;var full=S._cont!=null?S._cont+'\n'+line:line;
   if((quoteOpen(full)||incomplete(full))&&full.split('\n').length<200){S._cont=full;return {lines:[],out:'',rc:S.rc||0,cmd:line,cont:true};}
   S._cont=null;var r=prevRun.call(this,full);r.cmd=line;return r;};
 P.prompt=function(){if(this.S._cont!=null)return {user:'',host:'',dir:'',sym:'> ',text:'> ',cont:true};return prevPrompt.call(this);};
+})();
+/* exported vs shell variables, $PATH-driven lookup */
+(function(){var Sh=window.ELSim;if(!Sh||!Sh.BI)return;var P=Sh.prototype,BI=Sh.BI;
+var STD=/^(SHELL|PWD|LOGNAME|HOME|LANG|TERM|USER|PATH)$/;
+var pe=P.c_export;P.c_export=function(a,io){var s=this.cur(),X=BI.expOf(s);var nn=a.filter(function(x){return x!=='-n'&&x!=='-p';});
+  if(a[0]==='-n'){nn.forEach(function(x){delete X[x.split('=')[0]];});return 0;}
+  if(!nn.length){var self=this;Object.keys(s.vars).sort().forEach(function(k){if(X[k]||STD.test(k))io.out('declare -x '+k+'="'+s.vars[k]+'"\n');});return 0;}
+  nn.forEach(function(x){var k=x.split('=')[0];if(/^[A-Za-z_][A-Za-z0-9_]*$/.test(k))X[k]=1;});
+  var as=nn.filter(function(x){return x.indexOf('=')>0;});if(!as.length)return 0;var r=pe.call(this,as,io);return r||0;};
+var prc=P.runCmd;P.runCmd=function(cmd,stdin,W,o,lastp){var self=this,ws=(cmd&&cmd.w)||[],n=0;
+  function lit(w){return typeof w==='string'?w:(w&&w.raw!=null?w.raw:(w&&w.parts?w.parts.map(function(p){return p.v!=null?p.v:(p.t||'');}).join(''):''));}
+  var ex=[];try{while(n<ws.length){var xv=self.expandWord(ws[n]);if(xv.length===1&&/^[A-Za-z_][A-Za-z0-9_]*=/.test(xv[0])){ex.push(xv[0]);n++;}else break;}}catch(er){n=0;}
+  if(!n||n>=ws.length)return prc.apply(this,arguments);
+  var s=this.cur(),X=BI.expOf(s),saved=[];
+  try{for(var i=0;i<n;i++){var v=ex[i],e=v.indexOf('=');if(e<0)continue;var k=v.slice(0,e);saved.push([k,Object.prototype.hasOwnProperty.call(s.vars,k)?s.vars[k]:undefined,X[k]]);s.vars[k]=v.slice(e+1);X[k]=1;}}catch(er){}
+  try{return prc.apply(this,arguments);}finally{saved.reverse().forEach(function(z){if(z[1]===undefined)delete s.vars[z[0]];else s.vars[z[0]]=z[1];if(!z[2])delete X[z[0]];});}};
+var pex=P.exec;P.exec=function(){try{BI.expOf(this.cur());}catch(e){}return pex.apply(this,arguments);};
+P.c_env=(function(prev){return function(a,io){if(a.length)return prev.call(this,a,io);var s=this.cur(),self=this,X=BI.expOf(s);
+  ['SHELL','PWD','LOGNAME','HOME','LANG','TERM','USER','PATH'].forEach(function(k){io.out(k+'='+self.getVar(k)+'\n');});
+  Object.keys(s.vars).forEach(function(k){if(X[k]&&!STD.test(k))io.out(k+'='+s.vars[k]+'\n');});return 0;};})(P.c_env);
+P.c_printenv=(function(prev){return function(a,io){if(!a.length)return this.c_env([],io);var s=this.cur(),X=BI.expOf(s),self=this,rc=0;a.forEach(function(k){if(STD.test(k))io.out(self.getVar(k)+'\n');else if(X[k]&&k in s.vars)io.out(s.vars[k]+'\n');else rc=1;});return rc;};})(P.c_printenv);
+Sh.addCmds(['printenv'],{printenv:'print all or part of environment'});
+var pd=P.pathDirs;P.pathDirs=function(){var s=this.cur();if(s.vars&&Object.prototype.hasOwnProperty.call(s.vars,'PATH'))return s.vars.PATH.split(':').map(function(d){return d||'.';});return pd.call(this);};
 })();
 
 /* gamification: shared app namespace, store, XP/levels/badges/streak, toasts, confetti, dashboard */
@@ -8962,7 +8985,7 @@ var M=EL.MISSIONS=[
 {id:'4a',mod:4,title:'امسح الـ logs بـ wildcard',story:'فولدر فيه ملفات كتير؛ عايز تمسح كل الـ .log بأمر واحد من غير ما تمس أي حاجة تانية.',setup:setup(['rm -rf '+L+'/m4','mkdir -p '+L+'/m4','cd '+L+'/m4 && touch a1.log a2.log b1.log notes.txt data1.csv data2.csv data10.csv img.png .hidden.log']),steps:[
  {t:'ادخل ~/labs/m4 واعرض كل الملفات حتى المخفية',hint:'ls -a',sol:'cd ~/labs/m4 && ls -a',ok:function(l){return C.cwd()===L+'/m4'&&C.out(l,/\.hidden\.log/);}},
  {t:'امسح كل ملفات .log (العادية) بأمر واحد',hint:'rm *.log — لاحظ إن * مش بتمسك الملفات اللي بتبدأ بـ .',sol:'rm *.log',ok:function(l){return C.cmd(l,/\*/)&&['a1.log','a2.log','b1.log'].every(function(f){return C.none(L+'/m4/'+f);})&&C.file(L+'/m4/notes.txt');}},
- {t:'اتأكد إن .hidden.log لسه موجود (ls -a تاني) — فهمت ليه؟',hint:'الـ glob * مش بيطابق الـ dotfiles',sol:'ls -a',ok:function(l){return C.cmd(l,/ls\s+-\w*a/)&&C.out(l,/\.hidden\.log/)&&C.file(L+'/m4/.hidden.log');}}]},
+ {t:'اتأكد إن .hidden.log لسه موجود (ls -a تاني) — فهمت ليه؟',hint:'الـ glob * مش بيطابق الـ dotfiles',sol:'ls -a',ok:function(l){return C.cmd(l,/ls\s+-\w*a/)&&C.out(l,/\.hidden\.log/)&&C.file(L+'/m4/.hidden.log')&&C.none(L+'/m4/a1.log');}}]},
 {id:'4b',mod:4,title:'? مش زي *',story:'عايز تنقل data1.csv و data2.csv بس لفولدر csv — ومن غير data10.csv.',req:'4a',steps:[
  {t:'اعمل فولدر csv جوه ~/labs/m4',hint:'mkdir',sol:'mkdir ~/labs/m4/csv',ok:function(){return C.dir(L+'/m4/csv');}},
  {t:'انقل data?.csv بس لـ csv (؟ = حرف واحد بالظبط)',hint:'mv data?.csv csv/',sol:'cd ~/labs/m4 && mv data?.csv csv/',ok:function(){return C.file(L+'/m4/csv/data1.csv')&&C.file(L+'/m4/csv/data2.csv')&&C.file(L+'/m4/data10.csv');}},
@@ -9047,7 +9070,7 @@ var M=EL.MISSIONS=[
  {t:'اعرض الـ umask الحالي',hint:'umask',sol:'umask',ok:function(l){return C.cmd(l,/^\s*umask\s*$/)&&C.out(l,/^0\d{3}$/m);}},
  {t:'غيّره بحيث الـ group والـ others ميبقالهمش أي صلاحية',hint:'umask 077',sol:'umask 077',ok:function(){return sim().cur().umask===0o077;}},
  {t:'اعمل ~/labs/m10/private.txt واتأكد إنه 600',hint:'touch ثم ls -l',sol:'touch ~/labs/m10/private.txt && ls -l ~/labs/m10/private.txt',ok:function(){return C.mode(L+'/m10/private.txt')===0o600;}},
- {t:'رجّع الـ umask للـ default (022)',hint:'umask 022',sol:'umask 022',ok:function(){return sim().cur().umask===0o022;}}]},
+ {t:'رجّع الـ umask للـ default (022)',hint:'umask 022',sol:'umask 022',ok:function(l){return C.cmd(l,/umask\s+0?0?22\b/)&&sim().cur().umask===0o022;}}]},
 /* ---- Module 11 ---- */
 {id:'11a',mod:11,title:'find بالحجم',story:'الـ storage قرّب يخلص على الـ board. لاقي الملفات الكبيرة.',setup:setup(['rm -rf '+L+'/m11','mkdir -p '+L+'/m11/sub/deep '+L+'/m11/emptydir','cd '+L+'/m11 && touch big1.txt small.txt big2.log sub/big3.txt sub/deep/x.txt sub/empty.txt run.sh tool.sh','chmod 755 '+L+'/m11/run.sh '+L+'/m11/tool.sh'],function(){var b=L+'/m11/';fill.call(this,b+'big1.txt',15000);fill.call(this,b+'small.txt',2000);fill.call(this,b+'big2.log',20480);fill.call(this,b+'sub/big3.txt',12288);fill.call(this,b+'sub/deep/x.txt',900);fill.call(this,b+'run.sh',40,'#!/bin/bash\necho run\n');}),steps:[
  {t:'لاقي كل ملفات .txt اللي أكبر من 10k جوه ~/labs/m11',hint:"find ~/labs/m11 -name '*.txt' -size +10k (k صغيرة!)",sol:"find ~/labs/m11 -type f -name '*.txt' -size +10k",ok:function(l){return C.same(C.absSet(l),[L+'/m11/big1.txt',L+'/m11/sub/big3.txt']);}},
@@ -9187,7 +9210,7 @@ M.push(
  {t:'اكتب رسالة «temp high» بـ tag اسمه sensor و priority ‏user.warning',hint:'logger -t sensor -p user.warning "temp high"',sol:'logger -t sensor -p user.warning "temp high"',ok:function(){var t=C.txt('/var/log/syslog')||'';return /sensor(\[\d+\])?: temp high/.test(t);}},
  {t:'اعرض رسايل الـ tag ده بس من الـ journal',hint:'journalctl -t sensor',sol:'journalctl -t sensor',ok:function(l){return C.cmd(l,/journalctl/)&&C.out(l,/temp high/)&&!C.out(l,/Booting/);}},
  {t:'اعرض الرسايل اللي priority بتاعتها err وأخطر',hint:'journalctl -p err',sol:'journalctl -p err',ok:function(l){return C.cmd(l,/-p\s*err|--priority=err/)&&C.out(l,/ERROR overrun/);}},
- {t:'دوّر على أخطاء الـ EXT4 في /var/log/syslog (محتاج root)',hint:'sudo grep -i ext4 /var/log/syslog',sol:'sudo grep -i ext4 /var/log/syslog',ok:function(l){return C.out(l,/EXT4-fs/);}}]},
+ {t:'دوّر على أخطاء الـ EXT4 في /var/log/syslog (محتاج root)',hint:'sudo grep -i ext4 /var/log/syslog',sol:'sudo grep -i ext4 /var/log/syslog',ok:function(l){return C.cmd(l,/grep/)&&C.out(l,/EXT4-fs/);}}]},
 /* ---- Module 23 ---- */
 {id:'23a',mod:23,title:'شغّل الـ service بتاعتك مع الـ boot',story:'كتبت sensord.service في /etc/systemd/system. عايزها تشتغل دلوقتي ومع كل boot.',setup:function(){var s=sim();s.asRoot(function(){this.exec('systemctl disable --now sensord',{});});},steps:[
  {t:'اعرض حالة ssh الأول عشان تتعود على الشكل',hint:'systemctl status ssh',sol:'systemctl status ssh',ok:function(l){return C.cmd(l,/systemctl\s+status/)&&C.out(l,/active \(running\)/);}},
@@ -9214,6 +9237,73 @@ M.push(
  {t:'اعمل key من نوع ed25519 من غير passphrase في المكان الافتراضي',hint:'ssh-keygen -t ed25519 -N "" -f ~/.ssh/id_ed25519',sol:'ssh-keygen -t ed25519 -N "" -f ~/.ssh/id_ed25519',ok:function(){return C.file(HM+'/.ssh/id_ed25519')&&C.file(HM+'/.ssh/id_ed25519.pub');}},
  {t:'اعرض صلاحيات ملفات ~/.ssh — لاحظ إن الـ private key ‏600',hint:'ls -l ~/.ssh',sol:'ls -l ~/.ssh',ok:function(l){return C.out(l,/-rw-------.*id_ed25519\s*$/m);}},
  {t:'اطبع الـ public key (ده اللي بيتنقل للبورد)',hint:'cat ~/.ssh/id_ed25519.pub',sol:'cat ~/.ssh/id_ed25519.pub',ok:function(l){return C.out(l,/^ssh-ed25519 /m);}}]}
+);
+})();
+
+/* missions for scripting modules 12, 13, 26-29 (appended to EL.MISSIONS) */
+(function(){'use strict';var EL=window.EL,C=EL.C,M=EL.MISSIONS;if(!M||!C)return;var HM='/home/mohamed',L=HM+'/labs';
+function sim(){return EL.sim;}
+function setup(lines){return function(){var s=sim();s.asRoot(function(){var self=this;lines.forEach(function(l){self.exec(l,{});});self.exec('chown -R mohamed:mohamed '+L,{});});};}
+function put(p,txt){return "printf '%s' '"+txt.replace(/'/g,"'\\''")+"' > "+p;}
+function all(l){return (l.lines||[]).map(function(x){return x.t;}).join('')||l.out||'';}
+function txt(p){return C.txt(p)||'';}
+function isX(p){var n=C.q(p);return !!n&&n.type!=='d'&&((n.mode||0)&64)!==0;}
+function lines(l){return C.lines(l);}
+M.push(
+/* ---- Module 12: first scripts, variables, arguments ---- */
+{id:'12a',mod:12,title:'أول script: flash.sh',story:'هتكتب script صغير بياخد اسم الـ image والـ baud كـ arguments. ملحوظة: جوه double quotes الـ ! بيعمل history expansion في الـ terminal التفاعلي — عشان كده اكتب الـ shebang جوه single quotes.',setup:setup(['rm -rf '+L+'/m12','mkdir -p '+L+'/m12']),steps:[
+ {t:'ادخل ~/labs/m12 واكتب flash.sh: أول سطر ‎#!/bin/bash‎ وتاني سطر ‎echo "Flashing $1 at baud $2 ($# args)"‎',hint:"printf '#!/bin/bash\\necho \"Flashing $1 at baud $2 ($# args)\"\\n' > flash.sh",sol:"cd ~/labs/m12; printf '#!/bin/bash\\necho \"Flashing $1 at baud $2 ($# args)\"\\n' > flash.sh",ok:function(){var t=txt(L+'/m12/flash.sh');return /^#!\/bin\/(ba)?sh/.test(t)&&/\$1/.test(t)&&/\$2/.test(t);}},
+ {t:'خليه executable',hint:'chmod +x flash.sh',sol:'chmod +x flash.sh',ok:function(l){return C.cmd(l,/chmod/)&&isX(L+'/m12/flash.sh');}},
+ {t:'شغّله بـ ‎./flash.sh uboot.img 115200‎',hint:'./flash.sh uboot.img 115200',sol:'./flash.sh uboot.img 115200',ok:function(l){return C.out(l,/Flashing uboot\.img at baud 115200 \(2 args\)/);}},
+ {t:'شغّله بـ bash -x عشان تشوف كل سطر قبل ما يتنفذ (علامة +)',hint:'bash -x flash.sh a b',sol:'bash -x flash.sh a b',ok:function(l){return C.cmd(l,/bash\s+-x/)&&/^\+ echo/m.test(all(l));}}]},
+{id:'12b',mod:12,title:'متغيرات و quotes و $( )',story:'نفس الحروف بس النتيجة مختلفة حسب الـ quotes. جرّب بنفسك بدل ما تحفظ.',steps:[
+ {t:'عرّف ‎BOARD=beaglebone‎ واطبع «beaglebone_v2» (محتاج ‎${ }‎ عشان الـ _ جزء من اسم المتغير)',hint:'BOARD=beaglebone; echo "${BOARD}_v2"',sol:'BOARD=beaglebone; echo "${BOARD}_v2"',ok:function(l){return C.cmd(l,/\$\{BOARD\}/)&&C.out(l,/^beaglebone_v2$/m);}},
+ {t:'اطبع النص ‎$BOARD costs $5‎ حرفياً من غير expansion',hint:"echo '$BOARD costs $5'",sol:"echo '$BOARD costs $5'",ok:function(l){return C.out(l,/^\$BOARD costs \$5$/m);}},
+ {t:'خزّن ناتج ‎uname -r‎ في KVER واطبع ‎kernel=...‎',hint:'KVER=$(uname -r); echo "kernel=$KVER"',sol:'KVER=$(uname -r); echo "kernel=$KVER"',ok:function(l){return C.cmd(l,/\$\(\s*uname/)&&C.out(l,/^kernel=\d/m);}},
+ {t:'اقرا قيمتين من here-string في board و rev واطبعهم: «bbb rev C3»',hint:'read -r board rev <<< "bbb C3"; echo "$board rev $rev"',sol:'read -r board rev <<< "bbb C3"; echo "$board rev $rev"',ok:function(l){return C.cmd(l,/read/)&&C.out(l,/^bbb rev C3$/m);}}]},
+/* ---- Module 13: environment & PATH ---- */
+{id:'13a',mod:13,title:'أوامرك في PATH',story:'عايز تكتب ‎hi‎ بس من أي مكان، زي ls بالظبط. الـ shell بيدوّر في فولدرات الـ PATH بالترتيب.',setup:setup(['rm -rf '+HM+'/bin']),steps:[
+ {t:'اعمل ~/bin وجواه script اسمه hi بيطبع hello-from-bin وخليه executable',hint:"mkdir -p ~/bin; printf '#!/bin/sh\\necho hello-from-bin\\n' > ~/bin/hi; chmod +x ~/bin/hi",sol:"mkdir -p ~/bin; printf '#!/bin/sh\\necho hello-from-bin\\n' > ~/bin/hi; chmod +x ~/bin/hi",ok:function(l){return C.cmd(l,/chmod/)&&isX(HM+'/bin/hi')&&/hello-from-bin/.test(txt(HM+'/bin/hi'));}},
+ {t:'جرّب تكتب hi لوحده — هيقولك command not found. ليه؟ اطبع $PATH وشوف',hint:'hi; echo $PATH',sol:'hi; echo $PATH',ok:function(l){return C.cmd(l,/\$PATH/)&&C.out(l,/\/usr\/bin/);}},
+ {t:'ضيف ~/bin في أول الـ PATH وشغّل hi',hint:'export PATH="$HOME/bin:$PATH"; hi',sol:'export PATH="$HOME/bin:$PATH"; hi',ok:function(l){return C.out(l,/hello-from-bin/);}},
+ {t:'اسأل الـ shell: hi ده جاي منين؟',hint:'type hi   (أو which hi)',sol:'type hi',ok:function(l){return C.out(l,/\/home\/mohamed\/bin\/hi/);}}]},
+{id:'13b',mod:13,title:'export: مين بيورث إيه',story:'كل script بيشتغل في process ابن. الابن بياخد الـ environment بس — مش كل متغيرات الـ shell.',steps:[
+ {t:'عرّف ‎V=1‎ من غير export وجرّب: ‎bash -c \'echo "V=$V"\'‎ — هيطلع فاضي',hint:"V=1; bash -c 'echo \"V=$V\"'",sol:"V=1; bash -c 'echo \"V=$V\"'",ok:function(l){return C.cmd(l,/bash\s+-c/)&&C.out(l,/^V=$/m);}},
+ {t:'اعمله export وجرّب تاني — المرة دي الابن هيشوفه',hint:"export V; bash -c 'echo \"V=$V\"'",sol:"export V; bash -c 'echo \"V=$V\"'",ok:function(l){return C.cmd(l,/export/)&&C.out(l,/^V=1$/m);}},
+ {t:'ابعت متغير لأمر واحد بس من غير ما يفضل في الـ shell: ‎MODE=debug bash -c \'echo $MODE\'‎ وبعدها ‎echo "after=$MODE"‎',hint:"MODE=debug bash -c 'echo $MODE'; echo \"after=$MODE\"",sol:"MODE=debug bash -c 'echo $MODE'; echo \"after=$MODE\"",ok:function(l){return C.out(l,/^debug$/m)&&C.out(l,/^after=$/m);}},
+ {t:'اتأكد إن V في الـ environment (env + grep)',hint:"env | grep '^V='",sol:"env | grep '^V='",ok:function(l){return C.cmd(l,/env|printenv/)&&C.out(l,/^V=1$/m);}}]},
+/* ---- Module 26: conditions & case ---- */
+{id:'26a',mod:26,title:'init script بـ case',story:'كل service قديمة في /etc/init.d شكلها كده: start | stop | غير كده usage و exit 2.',setup:setup(['rm -rf '+L+'/m26','mkdir -p '+L+'/m26']),steps:[
+ {t:'ادخل ~/labs/m26 واكتب svc.sh فيه case على $1: start يطبع «Starting uartd»، stop يطبع «Stopping uartd»، أي حاجة تانية usage و exit 2 — وخليه executable',hint:"printf '#!/bin/bash\\ncase \"$1\" in\\n  start) echo \"Starting uartd\";;\\n  stop) echo \"Stopping uartd\";;\\n  *) echo \"usage: $0 start|stop\"; exit 2;;\\nesac\\n' > svc.sh; chmod +x svc.sh",sol:"cd ~/labs/m26; printf '#!/bin/bash\\ncase \"$1\" in\\n  start) echo \"Starting uartd\";;\\n  stop) echo \"Stopping uartd\";;\\n  *) echo \"usage: $0 start|stop\"; exit 2;;\\nesac\\n' > svc.sh; chmod +x svc.sh",ok:function(){var t=txt(L+'/m26/svc.sh');return /case/.test(t)&&/esac/.test(t)&&isX(L+'/m26/svc.sh');}},
+ {t:'شغّله بـ start',hint:'./svc.sh start',sol:'./svc.sh start',ok:function(l){return C.cmd(l,/svc\.sh\s+start/)&&C.out(l,/Starting uartd/);}},
+ {t:'شغّله بكلمة غلط واطبع الـ exit status — لازم 2',hint:'./svc.sh foo; echo "rc=$?"',sol:'./svc.sh foo; echo "rc=$?"',ok:function(l){return C.out(l,/usage:/)&&C.out(l,/rc=2/);}}]},
+{id:'26b',mod:26,title:'اختبر قبل ما تعمل',story:'script الـ deploy لازم يتأكد من حاجات قبل ما يكمل: الفولدر موجود؟ الملف مش فاضي؟ الرقم في الـ range؟',steps:[
+ {t:'اطبع yes لو /sys/class/gpio فولدر موجود وno لو لأ (سطر واحد بـ && و ||)',hint:'[ -d /sys/class/gpio ] && echo yes || echo no',sol:'[ -d /sys/class/gpio ] && echo yes || echo no',ok:function(l){return C.cmd(l,/-d/)&&C.out(l,/^(yes|no)$/m);}},
+ {t:'بـ if: لو /etc/hostname موجود ومش فاضي اطبع nonempty',hint:'if [ -s /etc/hostname ]; then echo nonempty; fi',sol:'if [ -s /etc/hostname ]; then echo nonempty; fi',ok:function(l){return C.cmd(l,/\bif\b/)&&C.out(l,/^nonempty$/m);}},
+ {t:'temp=72 — بـ (( )) اطبع HOT لو أكبر من 70 وإلا OK',hint:'temp=72; if (( temp > 70 )); then echo HOT; else echo OK; fi',sol:'temp=72; if (( temp > 70 )); then echo HOT; else echo OK; fi',ok:function(l){return C.cmd(l,/\(\(/)&&C.out(l,/^HOT$/m);}},
+ {t:'بـ [[ ]] و pattern: f=uboot.img — اطبع image لو بينتهي بـ .img',hint:'f=uboot.img; [[ $f == *.img ]] && echo image',sol:'f=uboot.img; [[ $f == *.img ]] && echo image',ok:function(l){return C.cmd(l,/\[\[/)&&C.out(l,/^image$/m);}}]},
+/* ---- Module 27: loops & arithmetic ---- */
+{id:'27a',mod:27,title:'Loops على البورد',story:'تكرار نفس الأمر على كذا LED أو كذا سطر في ملف — ده شغل الـ loops.',setup:setup(['rm -rf '+L+'/m27','mkdir -p '+L+'/m27',put(L+'/m27/ports.csv','console,115200\ngps,9600\nmodem,57600\n')]),steps:[
+ {t:'اطبع led1 و led2 و led3 كل واحد في سطر بـ for و {1..3}',hint:'for i in {1..3}; do echo "led$i"; done',sol:'for i in {1..3}; do echo "led$i"; done',ok:function(l){return C.cmd(l,/\bfor\b/)&&C.same(lines(l),['led1','led2','led3']);}},
+ {t:'ادخل ~/labs/m27 واقرا ports.csv سطر سطر بـ while read واطبع name@baud',hint:'while IFS=, read -r n b; do echo "$n@$b"; done < ports.csv',sol:'cd ~/labs/m27; while IFS=, read -r n b; do echo "$n@$b"; done < ports.csv',ok:function(l){return C.cmd(l,/while/)&&C.same(lines(l),['console@115200','gps@9600','modem@57600']);}},
+ {t:'بـ until: زوّد n من 0 لحد ما يبقى 3 واطبعه',hint:'n=0; until [ $n -ge 3 ]; do n=$((n+1)); done; echo $n',sol:'n=0; until [ $n -ge 3 ]; do n=$((n+1)); done; echo $n',ok:function(l){return C.cmd(l,/until/)&&C.out(l,/^3$/m);}},
+ {t:'احسب مجموع الـ baud rates في الملف بـ loop و $(( ))',hint:'s=0; while IFS=, read -r n b; do s=$((s+b)); done < ports.csv; echo $s',sol:'s=0; while IFS=, read -r n b; do s=$((s+b)); done < ports.csv; echo $s',ok:function(l){return C.cmd(l,/\$\(\(|\(\(/)&&C.out(l,/^182400$/m);}}]},
+/* ---- Module 28: arrays & string ops ---- */
+{id:'28a',mod:28,title:'Arrays و string surgery',story:'اشتغل على أسماء الملفات والـ config جوه bash نفسه من غير sed ولا cut.',steps:[
+ {t:'arr=(uart spi i2c) — ضيف can واطبع عدد العناصر وآخر عنصر («4 can»)',hint:'arr=(uart spi i2c); arr+=(can); echo ${#arr[@]} ${arr[-1]}',sol:'arr=(uart spi i2c); arr+=(can); echo ${#arr[@]} ${arr[-1]}',ok:function(l){return C.cmd(l,/\+=\(/)&&C.out(l,/^4 can$/m);}},
+ {t:'f=rootfs-v2.3.tar.gz — اطبع الاسم من غير ‎.tar.gz‎ (بـ %%)',hint:'f=rootfs-v2.3.tar.gz; echo ${f%%.tar.gz}',sol:'f=rootfs-v2.3.tar.gz; echo ${f%%.tar.gz}',ok:function(l){return C.cmd(l,/%/)&&C.out(l,/^rootfs-v2\.3$/m);}},
+ {t:'قسّم «ttyS0,115200,8N1» لـ array بـ IFS و read -a واطبع العنصر التاني',hint:'IFS=, read -ra p <<< "ttyS0,115200,8N1"; echo ${p[1]}',sol:'IFS=, read -ra p <<< "ttyS0,115200,8N1"; echo ${p[1]}',ok:function(l){return C.cmd(l,/read\s+-\w*a/)&&C.out(l,/^115200$/m);}},
+ {t:'associative array: ‎declare -A baud=([gps]=9600 [con]=115200)‎ واطبع baud الـ gps وعدد العناصر',hint:'declare -A baud=([gps]=9600 [con]=115200); echo ${baud[gps]} ${#baud[@]}',sol:'declare -A baud=([gps]=9600 [con]=115200); echo ${baud[gps]} ${#baud[@]}',ok:function(l){return C.cmd(l,/declare\s+-A/)&&C.out(l,/^9600 2$/m);}}]},
+/* ---- Module 29: functions, exit codes, trap, debugging ---- */
+{id:'29a',mod:29,title:'Functions بترجّع إزاي؟',story:'return للـ status بس. النص بيطلع على stdout والـ caller ياخده بـ $( ).',steps:[
+ {t:'اعمل function اسمها log بتطبع ‎[LOG]‎ وبعدها الـ arguments، وجرّبها بـ log boot ok',hint:'log(){ echo "[LOG] $*"; }; log boot ok',sol:'log(){ echo "[LOG] $*"; }; log boot ok',ok:function(l){return C.cmd(l,/log\s*\(\)/)&&C.out(l,/^\[LOG\] boot ok$/m);}},
+ {t:'function add بـ local بترجّع مجموع رقمين على stdout — خزّن ‎$(add 2 3)‎ في r واطبع r=5',hint:'add(){ local s=$(( $1 + $2 )); echo $s; }; r=$(add 2 3); echo "r=$r"',sol:'add(){ local s=$(( $1 + $2 )); echo $s; }; r=$(add 2 3); echo "r=$r"',ok:function(l){return C.cmd(l,/local/)&&C.out(l,/^r=5$/m);}},
+ {t:'function is_root بترجّع 0 لو ‎$(id -u)‎ صفر وإلا 1 — جرّبها بـ ‎is_root || echo "need sudo"‎',hint:'is_root(){ [ "$(id -u)" -eq 0 ]; }; is_root || echo "need sudo"',sol:'is_root(){ [ "$(id -u)" -eq 0 ]; }; is_root || echo "need sudo"',ok:function(l){return C.cmd(l,/is_root/)&&C.out(l,/need sudo/);}}]},
+{id:'29b',mod:29,title:'trap و set -e و الـ exit codes',story:'script الـ flashing لازم يمسح ملفاته المؤقتة حتى لو فشل، ويقف عند أول غلطة.',setup:setup(['rm -rf '+L+'/m29','mkdir -p '+L+'/m29']),steps:[
+ {t:'ادخل ~/labs/m29 واكتب t.sh: ‎trap "echo cleanup" EXIT‎ ثم ‎echo work‎ ثم ‎exit 3‎ — وشغّله بـ bash واطبع rc',hint:"printf '#!/bin/bash\\ntrap \"echo cleanup\" EXIT\\necho work\\nexit 3\\n' > t.sh; bash t.sh; echo \"rc=$?\"",sol:"cd ~/labs/m29; printf '#!/bin/bash\\ntrap \"echo cleanup\" EXIT\\necho work\\nexit 3\\n' > t.sh; bash t.sh; echo \"rc=$?\"",ok:function(l){return C.same(lines(l).slice(-3),['work','cleanup','rc=3']);}},
+ {t:'set -e: شغّل ‎bash -c \'set -e; false; echo never\'‎ واطبع rc — never مش هتظهر',hint:"bash -c 'set -e; false; echo never'; echo rc=$?",sol:"bash -c 'set -e; false; echo never'; echo rc=$?",ok:function(l){return C.cmd(l,/set\s+-e/)&&C.out(l,/rc=1/)&&!C.out(l,/never/);}},
+ {t:'شغّل أمر مش موجود اسمه flashit واطبع الـ exit status — ده الرقم اللي معناه command not found',hint:'flashit; echo $?',sol:'flashit; echo $?',ok:function(l){return C.cmd(l,/flashit/)&&C.out(l,/^127$/m);}},
+ {t:'اعمل debug لـ t.sh بـ bash -x وشوف الـ trap وهو بيتنفذ',hint:'bash -x t.sh',sol:'bash -x t.sh',ok:function(l){return C.cmd(l,/bash\s+-x/)&&/^\+ echo work/m.test(all(l));}}]}
 );
 })();
 
