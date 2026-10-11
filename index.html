@@ -7824,7 +7824,7 @@ Sh.inits.push(function(f,d){
   f('/home/mohamed/lab/ages.txt',0o644,1000,1000,'31\n27\n35\n29\n');
   f('/home/mohamed/lab/old.c',0o644,1000,1000,'#include <stdio.h>\nint main(void){\n    printf("hello\\n");\n    return 0;\n}\n');
   f('/home/mohamed/lab/new.c',0o644,1000,1000,'#include <stdio.h>\nint main(void){\n    printf("hello, board\\n");\n    return 0;\n}\n');
-  f('/var/log/auth.log',0o640,0,4,'Oct 11 06:41:02 embedded-pc sshd[612]: Server listening on 0.0.0.0 port 22.\nOct 11 06:50:13 embedded-pc sshd[1290]: Failed password for root from 10.0.0.7 port 51022 ssh2\nOct 11 06:50:19 embedded-pc sshd[1290]: Accepted password for mohamed from 10.0.0.7 port 51022 ssh2\nOct 11 06:52:40 embedded-pc sudo: mohamed : TTY=pts/0 ; PWD=/home/mohamed ; USER=root ; COMMAND=/usr/bin/apt update\n');
+  f('/var/log/auth.log',0o640,0,4,'Oct 11 06:41:02 embedded-pc sshd[612]: Server listening on 0.0.0.0 port 22.\nOct 11 06:50:13 embedded-pc sshd[1290]: Failed password for root from 192.168.7.1 port 51022 ssh2\nOct 11 06:50:19 embedded-pc sshd[1290]: Accepted password for mohamed from 192.168.7.1 port 51022 ssh2\nOct 11 06:52:40 embedded-pc sudo: mohamed : TTY=pts/0 ; PWD=/home/mohamed ; USER=root ; COMMAND=/usr/bin/apt update\n');
   f('/etc/logrotate.conf',0o644,0,0,'weekly\nrotate 4\ncreate\ninclude /etc/logrotate.d\n');
   d('/etc/logrotate.d',0o755,0,0);
   f('/etc/logrotate.d/rsyslog',0o644,0,0,'/var/log/syslog\n{\n\trotate 7\n\tdaily\n\tmissingok\n\tnotifempty\n\tdelaycompress\n\tcompress\n\tpostrotate\n\t\t/usr/lib/rsyslog/rsyslog-rotate\n\tendscript\n}\n');
@@ -8206,7 +8206,7 @@ c_ssh:function(a,io){var host=a.filter(function(x,i){return x[0]!=='-'&&!/^-[pil
   io.err('ssh: Could not resolve hostname '+h+': Temporary failure in name resolution\n');return 255;},
 c_scp:function(a,io){io.err('(simulator) scp محتاج host حقيقي. الصيغة: scp FILE user@host:/path   أو   scp user@host:/path .\n');return 1;},
 'c_ssh-copy-id':function(a,io){io.err('/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/mohamed/.ssh/id_ed25519.pub"\n(simulator) مفيش host حقيقي — في الحقيقة بيضيف الـ public key لـ ~/.ssh/authorized_keys على الجهاز التاني.\n');return 1;},
-c_ss:function(a,io){io.out('Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:Port Process\ntcp   LISTEN 0      128          0.0.0.0:22         0.0.0.0:*\ntcp   LISTEN 0      4096   127.0.0.53%lo:53         0.0.0.0:*\ntcp   ESTAB  0      0       192.168.1.20:22        10.0.0.7:51022\ntcp   LISTEN 0      128             [::]:22            [::]:*\n');return 0;},
+c_ss:function(a,io){io.out('Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:Port Process\ntcp   LISTEN 0      128          0.0.0.0:22         0.0.0.0:*\ntcp   LISTEN 0      4096   127.0.0.53%lo:53         0.0.0.0:*\ntcp   ESTAB  0      0        192.168.7.2:22     192.168.7.1:51022\ntcp   LISTEN 0      128             [::]:22            [::]:*\n');return 0;},
 c_hostnamectl:function(a,io){io.out(' Static hostname: embedded-pc\n       Icon name: computer-embedded\n         Chassis: embedded\n      Machine ID: 2f8c1d7e9b3a4c5d8e6f0a1b2c3d4e5f\n         Boot ID: a7d93e0c51f24b8e9c6d2f7a18b40e55\nOperating System: Debian GNU/Linux 12 (bookworm)\n          Kernel: Linux 6.1.83-ti\n    Architecture: arm\n');return 0;},
 c_dig:function(a,io){var h=a.filter(function(x){return /^[^-@+]/.test(x);})[0]||'.';io.out('\n; <<>> DiG 9.18.28 <<>> '+h+'\n;; global options: +cmd\n;; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 40211\n;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; QUESTION SECTION:\n;'+h+'.\t\t\tIN\tA\n\n;; ANSWER SECTION:\n'+h+'.\t\t300\tIN\tA\t93.184.215.14\n\n;; Query time: 23 msec\n;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)\n\n');return 0;},
 c_nslookup:function(a,io){io.out('Server:\t\t127.0.0.53\nAddress:\t127.0.0.53#53\n\nNon-authoritative answer:\nName:\t'+(a[0]||'')+'\nAddress: 93.184.215.14\n');return 0;},
@@ -8621,7 +8621,7 @@ function Ctl(k,n){this.k=k;this.n=n;}
 function wtext(w){return w.map(function(c){return c.c;}).join('');}
 /* expand a raw string into words (with globbing unless noglob) */
 function words(self,raw,noglob){if(!raw||!raw.trim())return [];var T=self.lex(raw.replace(/\n/g,' '));var out=[];T.forEach(function(t){if(t.w)out.push.apply(out,self.expandWord(t.w,noglob));});return out;}
-function str1(self,raw){/* expand to a single string (no splitting, no glob) */if(raw==null)return '';var T=self.lex(raw.replace(/\n/g,' '));var parts=[];T.forEach(function(t){if(t.w)parts.push(wtext(t.w).split(SEP).join(' ').replace(new RegExp(NOWORD,'g'),''));});return parts.join(' ');}
+function str1(self,raw){/* expand to a single string (no splitting, no glob) */if(raw==null)return '';var q=null,pr='';for(var i=0;i<raw.length;i++){var c=raw[i];if(q){if(c===q)q=null;else if(c==='\\'&&q==='"'){pr+=c+(raw[i+1]||'');i++;continue;}pr+=(c==='\n')?'\x04':c;continue;}if(c==='\\'){pr+=c+(raw[i+1]||'');i++;continue;}if(c==="'"||c==='"')q=c;pr+=(c==='\n')?' ':c;}var T=self.lex(pr);var parts=[];T.forEach(function(t){if(t.w)parts.push(wtext(t.w).split(SEP).join(' ').replace(new RegExp(NOWORD,'g'),''));});return parts.join(' ').replace(/\x04/g,'\n');}
 function patOf(self,raw){/* glob pattern string: quoted chars escaped */var T=self.lex(raw);var s='';T.forEach(function(t){if(!t.w)return;t.w.forEach(function(c){if(c.c===SEP){s+=' ';return;}if(c.c===NOWORD)return;s+=c.q&&/[*?\[\]\\]/.test(c.c)?'\\'+c.c:c.c;});});return s;}
 function reOf(self,raw){var o='',i=0,esc=function(x){return x.replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&');};while(i<raw.length){var c=raw[i];
   if(c==='\\'){o+=esc(raw[i+1]||'');i+=2;continue;}
@@ -8987,6 +8987,107 @@ P.c_env=(function(prev){return function(a,io){if(a.length)return prev.call(this,
 P.c_printenv=(function(prev){return function(a,io){if(!a.length)return this.c_env([],io);var s=this.cur(),X=BI.expOf(s),self=this,rc=0;a.forEach(function(k){if(STD.test(k))io.out(self.getVar(k)+'\n');else if(X[k]&&k in s.vars)io.out(s.vars[k]+'\n');else rc=1;});return rc;};})(P.c_printenv);
 Sh.addCmds(['printenv'],{printenv:'print all or part of environment'});
 var pd=P.pathDirs;P.pathDirs=function(){var s=this.cur();if(s.vars&&Object.prototype.hasOwnProperty.call(s.vars,'PATH'))return s.vars.PATH.split(':').map(function(d){return d||'.';});return pd.call(this);};
+})();
+
+/* simulator: ssh/scp/sftp to the board's own address, lsblk with the USB stick */
+(function(){'use strict';var Sh=window.ELSim;if(!Sh)return;var P=Sh.prototype;
+var SELF=/^(192\.168\.7\.2|127\.\d+\.\d+\.\d+|localhost|beaglebone|beaglebone\.local|embedded-pc)$/;
+var NAMES={localhost:'127.0.0.1','embedded-pc':'127.0.1.1',beaglebone:'192.168.7.2','beaglebone.local':'192.168.7.2','google.com':'142.250.201.14','www.google.com':'142.250.201.4','debian.org':'151.101.66.132','deb.debian.org':'151.101.66.132','github.com':'140.82.121.4'};
+var FP='SHA256:q8Wm3Ff1r0J0yTzHkB3Lr4bQe5n2vVxS1aYdP7uC9oI';
+function home(self){return self.getVar('HOME')||'/home/'+self.cur().user;}
+function readF(self,p){var r=self.res(p);return r.n&&r.n.t==='f'?self.content(r.n):null;}
+function writeF(self,p,txt){var saved=null;self.exec("mkdir -p "+p.replace(/\/[^\/]*$/,'')+" && chmod 700 "+home(self)+"/.ssh 2>/dev/null",{});self.exec("printf '%s' '"+txt.replace(/'/g,"'\\''")+"' > "+p,{});}
+/* reachability: returns {ok:true,ip} or {err:'...'} */
+function reach(self,h){
+  var ip=/^\d+\.\d+\.\d+\.\d+$/.test(h)?h:NAMES[h];
+  if(!ip)return {err:'ssh: Could not resolve hostname '+h+': Name or service not known\n'};
+  var N=self.S.net,eth=N&&N.ifs&&N.ifs.filter(function(i){return i.n==='eth0';})[0];
+  if(SELF.test(h)||SELF.test(ip))return {ok:true,ip:ip,self:true};
+  if(eth&&!eth.up)return {err:'ssh: connect to host '+h+' port 22: Network is unreachable\n'};
+  if(ip==='192.168.7.1')return {err:'ssh: connect to host '+h+' port 22: Connection refused\n(simulator) 192.168.7.1 هو الـ PC نفسه ومفيهوش sshd شغّال. البورد هي 192.168.7.2.\n'};
+  if(/^192\.168\.7\./.test(ip))return {err:'ssh: connect to host '+h+' port 22: No route to host\n'};
+  return {err:'ssh: connect to host '+h+' port 22: Connection timed out\n'};}
+function hostkey(self,h,ip,io,quiet){var kh=home(self)+'/.ssh/known_hosts',t=readF(self,kh)||'';var key=h+' ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK1simBoardHostKey7d2';
+  if(t.split('\n').some(function(l){return l.split(' ')[0].split(',').indexOf(h)>=0;}))return;
+  io.err("The authenticity of host '"+h+" ("+ip+")' can't be established.\nED25519 key fingerprint is "+FP+".\nThis key is not known by any other names.\nAre you sure you want to continue connecting (yes/no/[fingerprint])? yes   (simulator: جاوبنا yes)\nWarning: Permanently added '"+h+"' (ED25519) to the list of known hosts.\n");
+  writeF(self,kh,t+key+'\n');}
+function keyOK(self){var pub=readF(self,home(self)+'/.ssh/id_ed25519.pub')||readF(self,home(self)+'/.ssh/id_rsa.pub'),ak=readF(self,home(self)+'/.ssh/authorized_keys')||'';return !!pub&&ak.indexOf(pub.trim())>=0;}
+function auth(self,user,h,io){var me=self.cur().user;
+  if(user==='root'){io.err(user+'@'+h+"'s password: (simulated)\nPermission denied, please try again.\n(simulator) الـ login كـ root بالـ password مقفول (PermitRootLogin prohibit-password). ادخل بيوزر عادي واستخدم sudo.\n");return false;}
+  if(!keyOK(self))io.err(user+'@'+h+"'s password: (simulated ✓)\n");
+  if(user!==me&&user!=='debian'&&!self.user(user)){io.err('Permission denied, please try again.\n'+user+'@'+h+": Permission denied (publickey,password).\n");return false;}
+  return true;}
+function parse(a,withArg){var o={opts:{},pos:[]},i=0;for(;i<a.length;i++){var x=a[i];if(o.pos.length&&!withArg.rest){o.pos.push(x);continue;}if(x==='--'){o.pos=o.pos.concat(a.slice(i+1));break;}
+  if(x[0]==='-'&&x.length>1&&!o.pos.length){for(var k=1;k<x.length;k++){var f=x[k];if(withArg.args.indexOf(f)>=0){o.opts[f]=x.slice(k+1)||a[++i];break;}o.opts[f]=true;}}else o.pos.push(x);}return o;}
+P.c_ssh=function(a,io){if(a.indexOf('-V')>=0){io.err('OpenSSH_9.2p1 Debian-2+deb12u3, OpenSSL 3.0.14 4 Jun 2024\n');return 0;}
+  var o=parse(a,{args:'pilFoJEbcDLRWSmOQwBP'});if(!o.pos.length){io.err('usage: ssh [-46AaCfGgKkMNnqsTtVvXxYy] [-B bind_interface] [-b bind_address]\n           [-c cipher_spec] [-D [bind_address:]port] [-E log_file]\n           [-e escape_char] [-F configfile] [-I pkcs11] [-i identity_file]\n           [-J destination] [-L address] [-l login_name] [-m mac_spec]\n           [-O ctl_cmd] [-o option] [-P tag] [-p port] [-R address]\n           [-S ctl_path] [-W host:port] [-w local_tun[:remote_tun]]\n           destination [command [argument ...]]\n');return 255;}
+  var dest=o.pos[0].replace(/^ssh:\/\//,''),user=o.opts.l||(dest.indexOf('@')>=0?dest.split('@')[0]:this.cur().user),h=dest.split('@').pop().replace(/:\d+$/,'');
+  if(o.opts.p&&o.opts.p!=='22'){io.err('ssh: connect to host '+h+' port '+o.opts.p+': Connection refused\n');return 255;}
+  var r=reach(this,h);if(r.err){io.err(r.err);return 255;}
+  hostkey(this,h,r.ip,io);if(!auth(this,user,h,io))return 255;
+  var nk='_sshNote_'+user,note=(user!==this.cur().user&&!this.S[nk]&&(this.S[nk]=1))?'(simulator) اليوزر '+user+' على البورد = '+this.cur().user+' هنا.\n':'';
+  var cmd=o.pos.slice(1).join(' ');
+  if(!cmd){if(note)io.err(note);this.c_uname(['-a'],io);io.out('\nThe programs included with the Debian GNU/Linux system are free software;\nthe exact distribution terms for each program are described in the\nindividual files in /usr/share/doc/*/copyright.\n\nDebian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent\npermitted by applicable law.\nLast login: Sun Oct 11 06:50:19 2026 from 192.168.7.1\n');
+    io.err('(simulator) ده نفس الجهاز اللي انت عليه (192.168.7.2) — الـ terminal ده هو الـ shell بتاع البورد. عشان تشغّل أمر «على البورد» اكتب: ssh '+dest+" 'uname -a'\n");return 0;}
+  if(note)io.err(note);
+  return this.c_bash(['-c','cd "$HOME" 2>/dev/null; '+cmd],io);};
+P['c_ssh-copy-id']=function(a,io){var o=parse(a,{args:'ipoF'});var dest=o.pos[0];if(!dest){io.err('Usage: /usr/bin/ssh-copy-id [-h|-?|-f|-n|-s|-x] [-i [identity_file]] [-p port] [-F alternative ssh_config file] [-t target_path] [[-o <ssh -o options>] ...] [user@]hostname\n');return 1;}
+  var hm=home(this),pubp=(typeof o.opts.i==='string'?o.opts.i.replace(/^~/,hm):hm+'/.ssh/id_ed25519')+(/\.pub$/.test(o.opts.i||'')?'':'.pub'),pub=readF(this,pubp);
+  if(!pub){io.err('\n/usr/bin/ssh-copy-id: ERROR: failed to open ID file \''+pubp.replace(/\.pub$/,'')+'\': No such file or directory\n\t(to install the contents of \''+pubp+'\' anyway, look at the -f option)\n');return 1;}
+  io.err('/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "'+pubp+'"\n');
+  var h=dest.split('@').pop(),user=dest.indexOf('@')>=0?dest.split('@')[0]:this.cur().user,r=reach(this,h);if(r.err){io.err(r.err);return 1;}
+  hostkey(this,h,r.ip,io);var akp=hm+'/.ssh/authorized_keys',ak=readF(this,akp)||'';
+  if(ak.indexOf(pub.trim())>=0){io.err('/usr/bin/ssh-copy-id: WARNING: All keys were skipped because they already exist on the remote system.\n\t\t(if you think this is a mistake, you may want to use -f option)\n\n');return 0;}
+  io.err('/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed\n/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys\n'+user+'@'+h+"'s password: (simulated ✓)\n");
+  writeF(this,akp,ak+pub.trim()+'\n');this.exec('chmod 600 '+akp,{});
+  io.out('\nNumber of key(s) added: 1\n\nNow try logging into the machine, with:   "ssh \''+dest+'\'"\nand check to make sure that only the key(s) you wanted were added.\n\n');return 0;};
+/* scp: host:path on the board == local path here */
+function spec(self,s){var m=/^(?:([^@\/:]+)@)?([^\/:]+):(.*)$/.exec(s);if(!m)return {local:s};var p=m[3]||'.';if(p[0]!=='/')p=home(self)+'/'+p;return {host:m[2],user:m[1]||self.cur().user,path:p};}
+P.c_scp=function(a,io){var o=parse(a,{args:'PiloFcS',rest:true});if(o.pos.length<2){io.err('usage: scp [-346ABCOpqRrsTv] [-c cipher] [-D sftp_server_path] [-F ssh_config]\n           [-i identity_file] [-J destination] [-l limit] [-o ssh_option]\n           [-P port] [-S program] [-X sftp_option] source ... target\n');return 1;}
+  var self=this,specs=o.pos.map(function(s){return spec(self,s);}),done={};
+  for(var i=0;i<specs.length;i++){var s=specs[i];if(s.host&&!done[s.host]){var r=reach(this,s.host);if(r.err){io.err(r.err.replace(/^ssh: /,'ssh: '));if(/Could not resolve/.test(r.err))io.err('scp: Connection closed\n');return 255;}hostkey(this,s.host,r.ip,io);if(!auth(this,s.user,s.host,io))return 255;done[s.host]=1;}}
+  if(!Object.keys(done).length){/* plain local copy */}
+  var dst=specs[specs.length-1],srcs=specs.slice(0,-1),rc=0;
+  for(var j=0;j<srcs.length;j++){var sp=srcs[j].path||srcs[j].local,rn=this.res(sp);
+    if(!rn.n){io.err('scp: '+(srcs[j].host?srcs[j].path:sp)+': No such file or directory\n');rc=1;continue;}
+    if(rn.n.t==='d'&&!o.opts.r){io.err('scp: '+sp+': not a regular file\n');rc=1;continue;}
+    var dp=dst.path||dst.local;var buf=[];var sub={out:function(t){buf.push(t);},err:function(t){io.err(t.replace(/^cp:/,'scp:'));},tty:false};
+    var r2=this.c_cp((o.opts.r?['-r']:[]).concat([sp,dp]),sub);if(r2){rc=1;continue;}
+    if(!o.opts.q){var nm=sp.split('/').pop(),sz=rn.n.t==='f'?this.content(rn.n).length:4096;io.out((nm+'                                              ').slice(0,46)+'100% '+('    '+sz).slice(-5)+'    '+(sz/1024/0.1).toFixed(1)+'KB/s   00:00\n');}}
+  return rc;};
+/* sftp: batch-only (stdin / -b) */
+P.c_sftp=function(a,io){var o=parse(a,{args:'bPiFoBlRsS'}),dest=o.pos[0];if(!dest){io.err('usage: sftp [-46AaCfNpqrv] [-B buffer_size] [-b batchfile] [-c cipher]\n          [-D sftp_server_command] [-F ssh_config] [-i identity_file]\n          [-J destination] [-l limit] [-o ssh_option] [-P port]\n          [-R num_requests] [-S program] [-s subsystem | sftp_server]\n          destination\n');return 1;}
+  var h=dest.split('@').pop(),user=dest.indexOf('@')>=0?dest.split('@')[0]:this.cur().user,r=reach(this,h);if(r.err){io.err(r.err+'Connection closed.\n');return 255;}
+  hostkey(this,h,r.ip,io);if(!auth(this,user,h,io))return 255;io.out('Connected to '+h+'.\n');
+  var txt=typeof o.opts.b==='string'?readF(this,o.opts.b):io.stdin;
+  if(txt==null||txt===''){io.err('(simulator) الـ sftp التفاعلي مش متاح هنا. ابعت الأوامر بـ here-string أو batch file، مثلاً:\n  sftp '+dest+' <<< "put f.txt /tmp/"\nأو استخدم scp.\n');return 0;}
+  var rcd=home(this),lcd=this.cur().cwd,self=this,rc=0;
+  function abs(base,p){return !p?base:(p[0]==='/'?p:base+'/'+p);}
+  txt.split('\n').forEach(function(line){line=line.trim();if(!line||rc)return;io.out('sftp> '+line+'\n');var w=line.split(/\s+/),c=w[0];
+    var sub={out:function(t){io.out(t);},err:function(t){io.err(t);},tty:false};
+    if(c==='pwd')io.out('Remote working directory: '+rcd+'\n');
+    else if(c==='lpwd')io.out('Local working directory: '+lcd+'\n');
+    else if(c==='cd'){var d=abs(rcd,w[1]||'');if(self.res(d).n)rcd=d.replace(/\/+$/,'')||'/';else io.err("Couldn't canonicalize: No such file or directory\n");}
+    else if(c==='ls'||c==='dir'){self.c_ls([abs(rcd,w[1]||'')],sub);}
+    else if(c==='put'||c==='get'){var from=c==='put'?abs(lcd,w[1]):abs(rcd,w[1]),to=c==='put'?abs(rcd,w[2]||w[1].split('/').pop()):abs(lcd,w[2]||w[1].split('/').pop());
+      io.out((c==='put'?'Uploading ':'Fetching ')+from+' to '+to+'\n');if(self.c_cp([from,to],sub))rc=1;}
+    else if(c==='mkdir'){self.c_mkdir([abs(rcd,w[1])],sub);}
+    else if(c==='rm'){self.c_rm([abs(rcd,w[1])],sub);}
+    else if(/^(bye|exit|quit)$/.test(c)){rc=-1;}
+    else io.err('Invalid command.\n');});
+  return rc>0?1:0;};
+/* lsblk with the USB stick (sdb) and live mount points */
+var DEVS=[['mmcblk0','179:0',0,'14.8G','disk','','','',''],['mmcblk0p1','179:1',0,'128M','part','vfat','FAT32','BOOT','2D1A-0F7C','mmcblk0'],['mmcblk0p2','179:2',0,'14.7G','part','ext4','1.0','rootfs','b3f1c2d4-7e8a-4c6b-9d0e-1f2a3b4c5d6e','mmcblk0'],['mmcblk1','179:8',0,'3.6G','disk','','','',''],['sdb','8:16',1,'7.5G','disk','','','',''],['sdb1','8:17',1,'7.5G','part','vfat','FAT32','USBKEY','A1B2-C3D4','sdb']];
+P.c_lsblk=function(a,io){var self=this,f=a.some(function(x){return /^-\w*f/.test(x)||x==='--fs';}),want=a.filter(function(x){return x[0]!=='-';}).map(function(x){return x.replace(/^\/dev\//,'');});
+  var mnt={};[['/dev/mmcblk0p2','/'],['/dev/mmcblk0p1','/boot']].concat(this.S.mnt||[]).forEach(function(m){mnt[m[0].replace(/^\/dev\//,'')]=m[1];});
+  for(var w=0;w<want.length;w++){if(!DEVS.some(function(d){return d[0]===want[w];})){io.err('lsblk: /dev/'+want[w]+': not a block device\n');return 32;}}
+  var rows=DEVS.filter(function(d){if(!want.length)return true;return want.indexOf(d[0])>=0||want.indexOf(d[9])>=0;});
+  function name(d){if(!d[9])return d[0];var sib=rows.filter(function(x){return x[9]===d[9];});return (sib[sib.length-1]===d?'└─':'├─')+d[0];}
+  function pad(s,n){s=String(s);while(s.length<n)s+=' ';return s;}
+  if(f){io.out(pad('NAME',12)+' FSTYPE FSVER LABEL  UUID                                 FSAVAIL FSUSE% MOUNTPOINTS\n');rows.forEach(function(d){var m=mnt[d[0]]||'';var av=m==='/'?'11.2G':m==='/boot'?'97.4M':m?'7.4G':'',us=m==='/'?'18%':m==='/boot'?'24%':m?'1%':'';
+      io.out(pad(name(d),12)+' '+pad(d[5],6)+' '+pad(d[6],5)+' '+pad(d[7],6)+' '+pad(d[8],36)+' '+('       '+av).slice(-7)+' '+('      '+us).slice(-6)+' '+m+'\n');});return 0;}
+  io.out('NAME         MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS\n');rows.forEach(function(d){io.out(pad(name(d),12)+' '+pad(d[1],7)+' '+('  '+d[2]).slice(-2)+' '+('     '+d[3]).slice(-5)+'  0 '+pad(d[4],4)+' '+(mnt[d[0]]||'')+'\n');});return 0;};
+Sh.addCmds(['sftp'],{sftp:'OpenSSH secure file transfer'});
 })();
 
 /* gamification: shared app namespace, store, XP/levels/badges/streak, toasts, confetti, dashboard */
