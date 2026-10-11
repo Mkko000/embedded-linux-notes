@@ -27,14 +27,21 @@ An original, deep **Embedded Linux** course in Egyptian Arabic by **Mohammed El 
 | 11 | Searching: `find` & `locate` |
 
 ## ✨ Features
+- **Built-in Linux terminal simulator** (🖥️ button, or <kbd>Ctrl</kbd>+<kbd>`</kbd>) — a fake Debian 13 machine running fully in the browser: filesystem, users & groups, permissions, `sudo`/`su`, pipes, redirection (`2>&1`, `/dev/null`), globbing & brace expansion, `$(...)`, history, Tab completion. 150+ commands with GNU-style outputs and error messages (`ls`, `find`, `grep`, `sort`, `cut`, `chmod`, `useradd`, `usermod`, `passwd`, `chage`, `gcc`, …). State is saved locally; one-click reset.
+- **▶ Try-it buttons** on every recorded terminal session — sends the commands straight into the simulator.
+- **32 guided missions** (about 3 per module) that check themselves as you type, with hints and step-by-step solutions.
+- **Gamification** — XP, 11 levels, 16 badges, daily streak, per-module progress, confetti, and a progress dashboard.
+- **Per-module quizzes** — multiple choice, *type the command* (validated by running it in a sandbox), drag-to-order and matching, each with an explanation.
+- **Flashcards with spaced repetition** (Leitner boxes) built from the cheat-sheet and the glossary.
+- **Vim trainer** — a real modal editor with 12 exercises (motions, operators, undo, `:%s`, `:wq`).
+- **Playgrounds** — clickable permission bits (SUID/SGID/sticky) and a `umask` board, regex tester with a live pattern explainer, an animated boot sequence, and an animated RM/EDF scheduler.
+- **👑 Boss Challenge** — a timed 15-minute exam from all 11 modules with a per-module score report.
 - **64 real terminal sessions** — actually executed on Debian 13, with every output line explained.
-- **Interactive tools** — boot-sequence simulator, RM/EDF scheduling simulator, wildcard & regex playground, `chmod`/`umask` calculator.
-- **Searchable command cheat-sheet**, glossary, and review quizzes.
-- **"Common mistake" tips** — curly quotes, `umask` math, `find -size k`, `vim dw` vs `de`, regex `.` — each verified by running it.
-- Light/dark theme, RTL Arabic with correctly isolated English commands, works offline (single HTML file).
+- **"Common mistake" tips**, searchable cheat-sheet and glossary.
+- Readable typography, light/dark theme, RTL Arabic with isolated English commands, mobile friendly, works offline (single self-contained HTML file, no network requests).
 
 ## 🇪🇬 بالعربي
-كورس Embedded Linux كامل بالمصري في 11 وحدة (Module) — صفحة واحدة. الشرح بيدخل في العمق: إزاي كل حاجة شغالة من جوه وليه، مع مقارنة بالـ microcontroller، و64 جلسة terminal حقيقية مشروحة سطر سطر، وأدوات تفاعلية، و cheat-sheet، ونصايح «خلي بالك — غلطة شائعة».
+كورس Embedded Linux كامل بالمصري في 11 وحدة (Module) — صفحة واحدة. الشرح بيدخل في العمق: إزاي كل حاجة شغالة من جوه وليه، مع مقارنة بالـ microcontroller، و64 جلسة terminal حقيقية مشروحة سطر سطر، و<b>terminal Linux محاكي</b> جوه الصفحة، و32 mission بتتصحح أوتوماتيك، و XP و levels و badges، و quizzes، و flashcards، و vim trainer، و Boss Challenge بالوقت، و cheat-sheet، ونصايح «خلي بالك — غلطة شائعة».
 افتح الموقع: https://mkko000.github.io/embedded-linux-notes/
 
 ## 👤 Author
