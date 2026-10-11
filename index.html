@@ -7240,7 +7240,7 @@ c_sudoedit:function(a,io){var s=this.cur(),f=a.filter(function(x){return x[0]!==
   if(s.uid!==0){var u=this.user(s.user),g=this.group('sudo');if(!g||g.m.indexOf(s.user)<0){io.err(s.user+' is not in the sudoers file.\n');return 1;}}
   var e=this.getVar('SUDO_EDITOR')||ed(this)||'editor (nano)';var tmp='/var/tmp/'+f.split('/').pop().replace(/\.[^.]*$/,'')+'XXq7Lm'+(f.match(/\.[^.\/]*$/)||[''])[0];
   io.out('(simulator) sudoedit '+f+':\n  1) نسخة من الملف اتعملت في '+tmp+' ملكك إنت ('+s.user+')\n  2) اتفتحت بـ «'+e+'» كـ '+s.user+' مش root (ف الـ plugins والـ :!cmd مش بيشتغلوا بصلاحيات root)\n  3) لما تحفظ وتخرج، sudo بينسخها فوق '+f+(r.n?'':' (ملف جديد)')+' ويمسح المؤقت\n');return 0;},
-c_crontab:function(a,io){var s=this.cur();if(a[0]==='-l'){io.err('no crontab for '+s.user+'\n');return 1;}if(a[0]==='-e'){var e=ed(this);if(e){io.out('no crontab for '+s.user+' - using an empty one\n(simulator) crontab -e فتح /tmp/crontab.Xk2a9b/crontab بالـ editor من $VISUAL/$EDITOR = '+e+'\n');return 0;}
+c_crontab:function(a,io){/*P_cronOrigSet*/var s=this.cur();if(a[0]==='-l'){io.err('no crontab for '+s.user+'\n');return 1;}if(a[0]==='-e'){var e=ed(this);if(e){io.out('no crontab for '+s.user+' - using an empty one\n(simulator) crontab -e فتح /tmp/crontab.Xk2a9b/crontab بالـ editor من $VISUAL/$EDITOR = '+e+'\n');return 0;}
     io.out('no crontab for '+s.user+' - using an empty one\n\nSelect an editor.  To change later, run \'select-editor\'.\n  1. /bin/nano        <---- easiest\n  2. /usr/bin/vim.basic\n  3. /usr/bin/vim.tiny\n\nChoose 1-3 [1]: \n(simulator) مفيش $EDITOR متعرّف، فـ crontab سأل. جرّب: export EDITOR=vim وبعدين crontab -e تاني\n');return 0;}
   io.err('crontab: usage error: file name or - (for stdin) must be specified\nUsage:\n crontab [options] file\n crontab [options]\n crontab -n [hostname]\n\nOptions:\n -u <user>  define user\n -e         edit user\'s crontab\n -l         list user\'s crontab\n -r         delete user\'s crontab\n');return 1;},
 'c_select-editor':function(a,io){io.out('\nSelect an editor.  To change later, run \'select-editor\'.\n  1. /bin/nano        <---- easiest\n  2. /usr/bin/vim.basic\n  3. /usr/bin/vim.tiny\n\nChoose 1-3 [1]: \n(simulator) الاختيار بيتحفظ في ~/.selected_editor\n');return 0;},
@@ -7649,6 +7649,7 @@ function procs(self){var S=self.S;if(!S.procs){S.procs=[
   {pid:1337,pp:1290,u:'mohamed',c:'-bash',cm:'bash',st:'Ss',ni:0,tty:'pts/0',m:0.2}];S.jobs=[];S.npid=4300;}return S.procs;}
 function newpid(self){procs(self);self.S.npid+=3+((self.S.npid*7)%11);return self.S.npid;}
 var SIGS=['HUP','INT','QUIT','ILL','TRAP','ABRT','BUS','FPE','KILL','USR1','SEGV','USR2','PIPE','ALRM','TERM','STKFLT','CHLD','CONT','STOP','TSTP','TTIN','TTOU','URG','XCPU','XFSZ','VTALRM','PROF','WINCH','POLL','PWR','SYS'];
+U.procs=procs;U.now=now;
 function signum(s){if(/^\d+$/.test(s))return +s;s=String(s).toUpperCase().replace(/^SIG/,'');var i=SIGS.indexOf(s);if(s==='IO')return 29;return i<0?-1:i+1;}
 function signame(n){return SIGS[n-1];}
 var origExec=P.exec;
@@ -7721,8 +7722,10 @@ c_kill:function(a,io){var self=this;procs(this);if(!a.length){io.err('kill: usag
     if(!/^-?\d+$/.test(x)){io.err('-bash: kill: '+x+': arguments must be process or job IDs\n');rc=1;return;}
     var p=self.S.procs.filter(function(q){return q.pid===+x;})[0];if(!p){io.err('-bash: kill: ('+x+') - No such process\n');rc=1;return;}rc|=killp(self,p,sig,io);});
   if(this.S.notify){io.out(this.S.notify);this.S.notify='';}return rc;},
-c_pgrep:function(a,io){var o=gopt(a,'lafx','u'),L=procs(this),pat=o.args[0];if(!pat){io.err("pgrep: no matching criteria specified\nTry `pgrep --help' for more information.\n");return 2;}var re=new RegExp(pat);
+c_pgrep:function(a,io){var o=gopt(a,'lafxnoc','u'),L=procs(this),pat=o.args[0];if(!pat){io.err("pgrep: no matching criteria specified\nTry `pgrep --help' for more information.\n");return 2;}var re=new RegExp(pat);
   var hit=L.filter(function(p){var s=o.f.f?p.c:p.cm;return (o.f.x?new RegExp('^(?:'+pat+')$').test(s):re.test(s))&&(!o.f.u||p.u===o.v.u);});
+  if(hit.length&&(o.f.n||o.f.o)){hit=hit.slice().sort(function(x,y){return x.pid-y.pid;});hit=[o.f.n?hit[hit.length-1]:hit[0]];}
+  if(o.f.c){io.out(hit.length+'\n');return hit.length?0:1;}
   if(!hit.length)return 1;io.out(hit.map(function(p){return p.pid+(o.f.l?' '+p.cm:'')+(o.f.a?' '+p.c:'');}).join('\n')+'\n');return 0;},
 c_pkill:function(a,io){var self=this,sig=15,args=a.slice();if(args[0]&&/^-[A-Z0-9]+$/i.test(args[0])&&!/^-[fxu]$/.test(args[0])){sig=signum(args[0].slice(1));args=args.slice(1);}
   var o=gopt(args,'fx','u'),pat=o.args[0];if(!pat){io.err("pkill: no matching criteria specified\n");return 2;}var re=new RegExp(pat);
@@ -8090,6 +8093,147 @@ Sh.addCmds(['sed','awk','paste','patch','gzip','gunzip','zcat','bzip2','bunzip2'
  {sed:'sed [OPTION]... {script} [FILE]...',awk:"awk [-F fs] [-v var=val] 'program' [FILE]...",paste:'paste [-d LIST] [-s] [FILE]...',tar:'tar -c|-x|-t [-zjJv] -f ARCHIVE [FILE]...',kill:'kill [-SIG] PID|%JOB',at:'at TIME  (الأوامر من stdin)',journalctl:'journalctl [-u UNIT] [-p PRIO] [-n N] [-f] [-b]',apt:'apt update|install|remove|search|show|list',dpkg:'dpkg -l|-L|-S|-s|-i|-r',test:'test EXPR  أو  [ EXPR ]',bc:'echo "EXPR" | bc [-l]',expr:'expr ARG OP ARG'});
 G.ELbc=bcRun;
 })(typeof window!=='undefined'?window:global);
+/* ---- network model: ip / ping (stateful) ---- */
+(function(){var Sh=window.ELSim;if(!Sh||!Sh.ext)return;
+function net(self){var S=self.S;if(!S.net)S.net={ifs:[{n:'lo',idx:1,up:true,mac:'00:00:00:00:00:00',ip:'127.0.0.1',pre:8,mtu:65536},{n:'eth0',idx:2,up:true,mac:'98:5d:ad:4f:3c:21',ip:'192.168.7.2',pre:24,mtu:1500,brd:'192.168.7.255'}],gw:'192.168.7.1'};return S.net;}
+function find(N,n){for(var i=0;i<N.ifs.length;i++)if(N.ifs[i].n===n)return N.ifs[i];return null;}
+function fmtAddr(f,br){var st=f.n==='lo'?'UNKNOWN':(f.up?'UP':'DOWN');
+  if(br)return (f.n+'                ').slice(0,16)+' '+(st+'              ').slice(0,14)+' '+(f.up||f.n==='lo'?f.ip+'/'+f.pre:'')+'\n';
+  var fl=f.n==='lo'?'<LOOPBACK'+(f.up?',UP,LOWER_UP':'')+'>':'<BROADCAST,MULTICAST'+(f.up?',UP,LOWER_UP':'')+'>';
+  var s=f.idx+': '+f.n+': '+fl+' mtu '+f.mtu+' qdisc '+(f.n==='lo'?'noqueue':'mq')+' state '+st+' group default qlen 1000\n    link/'+(f.n==='lo'?'loopback':'ether')+' '+f.mac+' brd '+(f.n==='lo'?'00:00:00:00:00:00':'ff:ff:ff:ff:ff:ff')+'\n';
+  if(f.up)s+='    inet '+f.ip+'/'+f.pre+(f.brd?' brd '+f.brd:'')+' scope '+(f.n==='lo'?'host':'global')+' '+f.n+'\n       valid_lft forever preferred_lft forever\n';return s;}
+function fmtLink(f,br){var st=f.n==='lo'?'UNKNOWN':(f.up?'UP':'DOWN');if(br)return (f.n+'                ').slice(0,16)+' '+(st+'              ').slice(0,14)+' '+f.mac+' <'+(f.n==='lo'?'LOOPBACK':'BROADCAST,MULTICAST')+(f.up?',UP,LOWER_UP':'')+'>\n';
+  return fmtAddr(f,false).split('\n').slice(0,2).join('\n')+'\n';}
+Sh.ext({
+c_ip:function(a,io){var N=net(this),br=false,four=false;a=a.filter(function(x){if(x==='-br'||x==='-brief'||x==='--brief'){br=true;return false;}if(x==='-4'){four=true;return false;}if(x==='-c'||x==='-color'||x==='--color'||x==='-6')return false;return true;});
+  var obj=a[0]||'';
+  if(!obj){io.err('Usage: ip [ OPTIONS ] OBJECT { COMMAND | help }\nwhere  OBJECT := { address | link | route | neigh | ... }\n');return 255;}
+  var isA=/^a(d(d(r(e(s(s)?)?)?)?)?)?$/.test(obj),isL=/^l(i(n(k)?)?)?$/.test(obj),isR=/^r(o(u(t(e)?)?)?)?$/.test(obj);
+  if(isA||isL){var cmd=a[1]||'show',rest=a.slice(2);
+    if(isL&&cmd==='set'){var dev=rest[0]==='dev'?rest[1]:rest[0],st=rest[rest[0]==='dev'?2:1];var f=find(N,dev);if(!f){io.err('Cannot find device "'+dev+'"\n');return 1;}
+      if(st!=='up'&&st!=='down'){io.err('Error: either "dev" is duplicate, or "'+(st||'')+'" is a garbage.\n');return 1;}
+      if(this.cur().uid!==0){io.err('RTNETLINK answers: Operation not permitted\n');return 2;}f.up=(st==='up');return 0;}
+    if(cmd!=='show'&&cmd!=='list'&&cmd!=='sh'&&cmd!=='s'){
+      if(isA&&(cmd==='add'||cmd==='del')){if(this.cur().uid!==0){io.err('RTNETLINK answers: Operation not permitted\n');return 2;}io.err('ip: (simulator) تغيير العناوين مش مدعوم هنا — جرّب ip link set\n');return 1;}
+      io.err('Command "'+cmd+'" is unknown, try "ip '+(isA?'address':'link')+' help".\n');return 1;}
+    var d=rest[0]==='dev'?rest[1]:rest[0],L=N.ifs;if(d){var f2=find(N,d);if(!f2){io.err('Device "'+d+'" does not exist.\n');return 1;}L=[f2];}
+    io.out(L.map(function(f){return isA?fmtAddr(f,br):fmtLink(f,br);}).join(''));return 0;}
+  if(isR){var e=find(N,'eth0');if(!e.up){return 0;}io.out(br?'default via '+N.gw+' dev eth0\n192.168.7.0/24 dev eth0 proto kernel scope link src 192.168.7.2\n':'default via '+N.gw+' dev eth0 proto static\n192.168.7.0/24 dev eth0 proto kernel scope link src 192.168.7.2\n');return 0;}
+  io.err('Object "'+obj+'" is unknown, try "ip help".\n');return 1;},
+c_ping:function(a,io){var N=net(this),c=4,h='',W=1,q=false;
+  for(var i=0;i<a.length;i++){var x=a[i];if(x==='-c'){c=+a[++i];}else if(/^-c\d+$/.test(x))c=+x.slice(2);else if(x==='-W'||x==='-i'||x==='-s'||x==='-t'){if(x==='-W')W=+a[i+1];i++;}else if(x==='-q')q=true;else if(x[0]==='-'){}else h=x;}
+  if(!h){io.err('ping: usage error: Destination address required\n');return 1;}
+  if(!(c>0)){io.err('ping: invalid argument: \''+c+'\': out of range: 1 <= value <= 9223372036854775807\n');return 1;}
+  var names={localhost:'127.0.0.1','embedded-pc':'127.0.1.1',beaglebone:'192.168.7.2','google.com':'142.250.201.14','www.google.com':'142.250.201.4','debian.org':'151.101.66.132','deb.debian.org':'151.101.66.132'};
+  var ip=/^\d+\.\d+\.\d+\.\d+$/.test(h)?h:names[h];
+  if(!ip){io.err('ping: '+h+': Name or service not known\n');return 2;}
+  var loop=/^127\./.test(ip)||ip==='192.168.7.2',e=find(N,'eth0'),lo=find(N,'lo');
+  if(!loop&&!e.up){io.err('ping: connect: Network is unreachable\n');return 2;}
+  var lan=/^192\.168\.7\./.test(ip),ext=!lan&&!loop,alive=loop||ip===N.gw||ip==='192.168.7.10'||ext;
+  var ttl=loop||lan?64:117,disp=h===ip?ip:h+' ('+ip+')',base=loop?0.031:lan?0.452:14.8,out='PING '+(h===ip?ip+' ('+ip+')':h+' ('+ip+')')+' 56(84) bytes of data.\n',rcv=0,ts=[];
+  for(var k=1;k<=c;k++){if(alive){var t=+(base*(1+((k*37)%11)/40)).toFixed(loop?3:base<1?3:1);ts.push(t);rcv++;if(!q)out+='64 bytes from '+disp+': icmp_seq='+k+' ttl='+ttl+' time='+t+' ms\n';}else if(lan&&!q)out+='From 192.168.7.2 icmp_seq='+k+' Destination Host Unreachable\n';}
+  out+='\n--- '+h+' ping statistics ---\n'+c+' packets transmitted, '+rcv+' received, '+(alive?'':'+'+c+' errors, ')+Math.round((c-rcv)*100/c)+'% packet loss, time '+((c-1)*1001)+'ms\n';
+  if(rcv){var mn=Math.min.apply(null,ts),mx=Math.max.apply(null,ts),av=ts.reduce(function(p,v){return p+v;},0)/ts.length;out+='rtt min/avg/max/mdev = '+mn.toFixed(3)+'/'+av.toFixed(3)+'/'+mx.toFixed(3)+'/'+((mx-mn)/2).toFixed(3)+' ms\n';}
+  io.out(out);return rcv?0:1;}
+});})();
+/* ---- systemctl (stateful), crontab (stdin/file), journalctl -t, pstree ---- */
+(function(){var Sh=window.ELSim;if(!Sh||!Sh.ext)return;var U=Sh.U,P=Sh.prototype;
+var SV={ssh:{d:'OpenBSD Secure Shell server',pid:612,cm:'sshd',c:'"sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups"',doc:'man:sshd(8)',en:1,ac:1,mem:'2.1M'},
+ cron:{d:'Regular background program processing daemon',pid:587,cm:'cron',c:'/usr/sbin/cron -f',doc:'man:cron(8)',en:1,ac:1,mem:'1.0M'},
+ rsyslog:{d:'System Logging Service',pid:533,cm:'rsyslogd',c:'/usr/sbin/rsyslogd -n -iNONE',doc:'man:rsyslogd(8)',en:1,ac:1,mem:'1.8M'},
+ atd:{d:'Deferred execution scheduler',pid:640,cm:'atd',c:'/usr/sbin/atd -f',doc:'man:atd(8)',en:1,ac:1,mem:'0.4M'},
+ 'systemd-journald':{d:'Journal Service',pid:301,cm:'systemd-journal',c:'/lib/systemd/systemd-journald',doc:'man:systemd-journald.service(8)',en:'static',ac:1,mem:'6.3M'},
+ bluetooth:{d:'Bluetooth service',pid:0,cm:'bluetoothd',c:'/usr/libexec/bluetooth/bluetoothd',doc:'man:bluetoothd(8)',en:0,ac:0,mem:'1.2M'},
+ 'serial-getty@ttyS0':{d:'Serial Getty on ttyS0',pid:702,cm:'agetty',c:'/sbin/agetty -o "-p -- \\\\u" --keep-baud 115200,57600,38400,9600 - vt220',doc:'man:agetty(8)',en:1,ac:1,mem:'0.2M'},
+ sensord:{d:'Board sensor logger (lab)',pid:0,cm:'sensord',c:'/usr/local/bin/sensord',doc:'file:/etc/systemd/system/sensord.service',en:0,ac:0,mem:'0.6M',local:1}};
+var ALIAS={sshd:'ssh',syslog:'rsyslog','getty@ttyS0':'serial-getty@ttyS0'};
+function st(self){var S=self.S;if(!S.svc){S.svc={};Object.keys(SV).forEach(function(k){S.svc[k]={en:SV[k].en,ac:SV[k].ac,pid:SV[k].pid,since:'06:40:29'};});S.target='multi-user.target';}return S.svc;}
+function unit(x){x=String(x||'').replace(/\.service$/,'');return ALIAS[x]||x;}
+function nowT(self){var d=U.now(self);return U.z2(d.getHours())+':'+U.z2(d.getMinutes())+':'+U.z2(d.getSeconds());}
+function deny(io,op,u){io.err('Failed to '+op+' '+u+'.service: Interactive authentication required.\nSee system logs and \'systemctl status '+u+'.service\' for details.\n');return 1;}
+function syncProc(self,k,on){var L=U.procs(self),s=st(self)[k],d=SV[k];var i=-1;L.forEach(function(p,j){if(p.pid===s.pid&&s.pid)i=j;});
+  if(on&&i<0){if(!s.pid)s.pid=4400+Math.floor(Math.random()*90);L.push({pid:s.pid,pp:1,u:'root',c:d.c.replace(/^"|"$/g,''),cm:d.cm,st:'Ss',ni:0,tty:'?',m:0.2});}
+  if(!on&&i>=0){var dp=L[i].pid;L.splice(i,1);L.forEach(function(p){if(p.pp===dp)p.pp=1;});}}
+function log(self,txt){try{var n=self.res('/var/log/syslog',{nocheck:1}).n;if(n){var d=U.now(self),M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];self.setContent(n,self.content(n)+M[d.getMonth()]+' '+(d.getDate()<10?' ':'')+d.getDate()+' '+nowT(self)+' embedded-pc systemd[1]: '+txt+'\n');}}catch(e){}}
+P.__cronOrig=P.c_crontab;P.__jctlOrig=P.c_journalctl;
+Sh.ext({
+c_systemctl:function(a,io){var self=this,S=st(this),root=this.cur().uid===0,now=false,typ=null,stF=null,args=[];
+  a.forEach(function(x){if(x==='--now')now=true;else if(/^--type=/.test(x))typ=x.split('=')[1];else if(x==='-t')typ='service';else if(/^--state=/.test(x))stF=x.split('=')[1];else if(x==='--no-pager'||x==='-l'||x==='--full'||x==='-q'||x==='--quiet'||x==='--all'||x==='-a'){}else args.push(x);});
+  var q=a.indexOf('-q')>=0||a.indexOf('--quiet')>=0,op=args[0]||'list-units',us=args.slice(1).map(unit);
+  function known(u){if(!SV[u]){io.err('Failed to '+op+' '+u+'.service: Unit '+u+'.service not found.\n');return false;}return true;}
+  switch(op){
+  case 'status':{if(!us.length){io.out('● embedded-pc\n    State: running\n    Units: 214 loaded (incl. loaded aliases)\n     Jobs: 0 queued\n   Failed: 0 units\n    Since: Sun 2026-10-11 06:40:27 EEST; 20min ago\n  systemd: 252.30-1~deb12u2\n   CGroup: /\n');return 0;}
+    var rc=0;us.forEach(function(u){if(!SV[u]){io.err('Unit '+u+'.service could not be found.\n');rc=4;return;}var d=SV[u],s=S[u],en=s.en==='static'?'static':s.en?'enabled':'disabled';
+      var o='● '+u+'.service - '+d.d+'\n     Loaded: loaded ('+(d.local?'/etc/systemd/system/':'/usr/lib/systemd/system/')+u+'.service; '+en+'; preset: enabled)\n';
+      if(s.ac)o+='     Active: active (running) since Sun 2026-10-11 '+s.since+' EEST\n       Docs: '+d.doc+'\n   Main PID: '+s.pid+' ('+d.cm+')\n      Tasks: 1 (limit: 1009)\n     Memory: '+d.mem+'\n        CPU: 105ms\n     CGroup: /system.slice/'+u+'.service\n             └─'+s.pid+' '+d.c+'\n';
+      else{o+='     Active: inactive (dead)'+(s.stopped?' since Sun 2026-10-11 '+s.stopped+' EEST':'')+'\n       Docs: '+d.doc+'\n';if(rc===0)rc=3;}
+      io.out(o+'\n');});return rc;}
+  case 'is-active':{var r=0,o='';us.forEach(function(u){var a2=SV[u]&&S[u].ac;o+=(a2?'active':SV[u]?'inactive':'inactive')+'\n';if(!a2)r=3;});if(!q)io.out(o);return r;}
+  case 'is-enabled':{var r2=0,o2='';us.forEach(function(u){if(!SV[u]){io.err('Failed to get unit file state for '+u+'.service: No such file or directory\n');r2=1;return;}var e=S[u].en;o2+=(e==='static'?'static':e?'enabled':'disabled')+'\n';if(!e)r2=1;});if(!q)io.out(o2);return r2;}
+  case 'is-failed':{if(!q)io.out(us.map(function(){return 'inactive';}).join('\n')+'\n');return 1;}
+  case 'start':case 'stop':case 'restart':case 'reload':case 'try-restart':{if(!us.length){io.err('Too few arguments.\n');return 1;}if(!root)return deny(io,op,us[0]);
+    for(var i=0;i<us.length;i++){if(!known(us[i]))return 5;var s=S[us[i]],u=us[i];
+      if(op==='stop'){if(s.ac){s.ac=0;syncProc(self,u,false);s.pid=0;s.stopped=nowT(self);log(self,'Stopped '+u+'.service - '+SV[u].d+'.');}}
+      else if(op==='reload'){if(!s.ac){io.err('Job for '+u+'.service failed.\nSee "systemctl status '+u+'.service" and "journalctl -xeu '+u+'.service" for details.\n');return 1;}log(self,'Reloading '+u+'.service - '+SV[u].d+'...');}
+      else{if(op==='try-restart'&&!s.ac)continue;if(s.ac&&op!=='start'){syncProc(self,u,false);s.pid=0;}if(!s.ac||op!=='start'){s.ac=1;s.since=nowT(self);syncProc(self,u,true);log(self,'Started '+u+'.service - '+SV[u].d+'.');}}}
+    return 0;}
+  case 'enable':case 'disable':{if(!us.length){io.err('Too few arguments.\n');return 1;}if(!root){io.err('Failed to '+op+' unit: Access denied\n');return 1;}
+    for(var j=0;j<us.length;j++){var u2=us[j];if(!SV[u2]){io.err('Failed to '+op+' unit: Unit file '+u2+'.service does not exist.\n');return 1;}var s2=S[u2];
+      if(s2.en==='static'){io.err('The unit files have no installation config (WantedBy=, RequiredBy=, Also=,\nAlias= settings in the [Install] section, and DefaultInstance= for template\nunits). This means they are not meant to be enabled or disabled using systemctl.\n');continue;}
+      if(op==='enable'&&!s2.en){io.err('Created symlink /etc/systemd/system/multi-user.target.wants/'+u2+'.service → '+(SV[u2].local?'/etc':'/usr/lib')+'/systemd/system/'+u2+'.service.\n');s2.en=1;}
+      if(op==='disable'&&s2.en){io.err('Removed "/etc/systemd/system/multi-user.target.wants/'+u2+'.service".\n');s2.en=0;}
+      if(now){if(op==='enable'&&!s2.ac){s2.ac=1;s2.since=nowT(self);syncProc(self,u2,true);log(self,'Started '+u2+'.service - '+SV[u2].d+'.');}if(op==='disable'&&s2.ac){s2.ac=0;syncProc(self,u2,false);s2.pid=0;s2.stopped=nowT(self);}}}
+    return 0;}
+  case 'get-default':io.out(this.S.svc&&this.S.target||'multi-user.target');io.out('\n');return 0;
+  case 'set-default':{if(!root){io.err('Failed to set default target: Access denied\n');return 1;}var t=args[1]||'';if(!/^(multi-user|graphical|rescue|emergency)(\.target)?$/.test(t)){io.err('Failed to set default target: Unit file '+t+' does not exist.\n');return 1;}t=t.replace(/(\.target)?$/,'.target');io.err('Created symlink /etc/systemd/system/default.target → /usr/lib/systemd/system/'+t+'.\n');this.S.target=t;return 0;}
+  case 'daemon-reload':if(!root){io.err('Failed to reload daemon: Access denied\n');return 1;}return 0;
+  case 'list-units':case 'list-unit-files':{var ks=Object.keys(SV).sort(),lf=op==='list-unit-files';
+    if(stF)ks=ks.filter(function(k){return lf?((S[k].en===1?'enabled':S[k].en==='static'?'static':'disabled')===stF):((stF==='running'||stF==='active')?S[k].ac:(stF==='inactive'||stF==='dead')?!S[k].ac:true);});
+    if(!lf&&!stF&&a.indexOf('--all')<0&&a.indexOf('-a')<0)ks=ks.filter(function(k){return S[k].ac;});
+    var o3=lf?'UNIT FILE                     STATE    PRESET\n':'  UNIT                          LOAD   ACTIVE SUB     DESCRIPTION\n';
+    ks.forEach(function(k){var nm=(k+'.service'+'                              ').slice(0,30);if(lf)o3+=nm+((S[k].en==='static'?'static':S[k].en?'enabled':'disabled')+'        ').slice(0,9)+'enabled\n';else o3+='  '+nm+'loaded '+(S[k].ac?'active running':'inactive dead   ')+' '+SV[k].d+'\n';});
+    o3+=lf?'\n'+ks.length+' unit files listed.\n':'\nLOAD   = Reflects whether the unit definition was properly loaded.\nACTIVE = The high-level unit activation state, i.e. generalization of SUB.\nSUB    = The low-level unit activation state, values depend on unit type.\n'+ks.length+' loaded units listed.\n';io.out(o3);return 0;}
+  case 'reboot':case 'poweroff':case 'halt':if(!root){io.err('Call to '+op+' failed: Interactive authentication required.\n');return 1;}io.out('(simulator) مش هنعمل '+op+' فعلاً — في البورد الحقيقية الاتصال هيتقطع هنا.\n');return 0;
+  default:io.err('Unknown command verb \''+op+'\'.\n');return 1;}},
+c_crontab:function(a,io){var S=this.S,me=this.cur().user,u=me,args=a.slice();var ui=args.indexOf('-u');if(ui>=0){u=args[ui+1];args.splice(ui,2);if(u!==me&&this.cur().uid!==0){io.err('must be privileged to use -u\n');return 1;}}
+  S.cron=S.cron||{};var cur=S.cron[u];
+  if(args[0]==='-l'){if(cur==null){io.err('no crontab for '+u+'\n');return 1;}io.out(cur);return 0;}
+  if(args[0]==='-r'){if(cur==null){io.err('no crontab for '+u+'\n');return 1;}delete S.cron[u];return 0;}
+  if(args[0]==='-e'){if(cur!=null){io.out('(simulator) crontab -e بيفتح نسخة من الـ crontab الحالي في الـ editor. هنا عدّلها بـ: crontab -l > my.cron ، عدّل الملف ، crontab my.cron\n');return 0;}return P.__cronOrig.call(this,a,io);}
+  if(args.length===1&&args[0][0]!=='-'||args[0]==='-'){var txt;if(args[0]==='-')txt=io.stdin||'';else{var r=this.res(args[0]);if(!r.n){io.err(args[0]+': No such file or directory\n');return 1;}txt=this.content(r.n);}
+    var L=txt.split('\n'),bad=0,F=['minute','hour','day-of-month','month','day-of-week'],RG=[[0,59],[0,23],[1,31],[1,12],[0,7]];
+    for(var i=0;i<L.length&&!bad;i++){var l=L[i].trim();if(!l||l[0]==='#'||/^[A-Za-z_][A-Za-z0-9_]*\s*=/.test(l))continue;
+      if(/^@(reboot|yearly|annually|monthly|weekly|daily|midnight|hourly)\s+\S/.test(l))continue;
+      var f=l.split(/\s+/);if(f.length<6){bad='"'+(args[0]==='-'?'-':args[0])+'":'+(i+1)+': bad '+(F[f.length-1]?F[Math.min(f.length,4)]:'command')+'\n';break;}
+      for(var k=0;k<5;k++){var ok=f[k].split(',').every(function(p){var m=/^(\*|(\d+)(-(\d+))?)(\/(\d+))?$/.exec(p);if(!m)return /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|sun|mon|tue|wed|thu|fri|sat)$/i.test(p);if(m[2]==null)return true;var x=+m[2],y=m[4]!=null?+m[4]:x;return x>=RG[k][0]&&y<=RG[k][1]&&x<=y;});if(!ok){bad='"'+(args[0]==='-'?'-':args[0])+'":'+(i+1)+': bad '+F[k]+'\n';break;}}}
+    if(bad){io.err(bad+"errors in crontab file, can't install.\n");return 1;}
+    S.cron[u]=txt&&!/\n$/.test(txt)?txt+'\n':txt;return 0;}
+  return P.__cronOrig.call(this,a,io);}
+});
+if(!P.__cronOrig)P.__cronOrig=function(a,io){io.err('crontab: usage error: file name or - (for stdin) must be specified\n');return 1;};
+})();
+/* journalctl -t / --identifier, pstree */
+(function(){var Sh=window.ELSim;if(!Sh||!Sh.ext)return;var U=Sh.U,P=Sh.prototype;
+Sh.ext({
+c_journalctl:function(a,io){var tag=null,b=[];for(var i=0;i<a.length;i++){if(a[i]==='-t'||a[i]==='--identifier'){tag=a[++i];}else if(/^--identifier=/.test(a[i]))tag=a[i].split('=')[1];else b.push(a[i]);}
+  if(tag==null)return P.__jctlOrig.call(this,a,io);var nI=b.indexOf('-n'),n=null;if(nI>=0){n=+b[nI+1];b.splice(nI,2);}
+  var buf='',rc=P.__jctlOrig.call(this,b,{out:function(t){buf+=t;},err:function(t){io.err(t);},stdin:io.stdin,piped:io.piped});
+  var esc=tag.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),re=new RegExp(' '+esc+'(\\[\\d+\\])?: ');var L=buf.split('\n').filter(function(l){return re.test(l);});if(n!=null)L=L.slice(-n);
+  io.out(L.length?L.join('\n')+'\n':'-- No entries --\n');return rc;},
+c_pstree:function(a,io){var L=U.procs(this),pp=a.some(function(x){return /^-\w*p/.test(x);}),showU=a.some(function(x){return /^-\w*u/.test(x);});var root=1,arg=a.filter(function(x){return x[0]!=='-';})[0];
+  if(arg){if(/^\d+$/.test(arg))root=+arg;else{var me=L.filter(function(p){return p.u===arg;}).sort(function(x,y){return x.pid-y.pid;});if(!me.length){io.err('pstree: No such user name: '+arg+'\n');return 1;}root=me[0].pid;}}
+  var by={};L.forEach(function(p){by[p.pid]=p;});if(!by[root]){return 1;}
+  function kids(pid){return L.filter(function(p){return p.pp===pid&&p.pid!==pid;}).sort(function(x,y){return x.cm<y.cm?-1:x.cm>y.cm?1:x.pid-y.pid;});}
+  function label(p){return p.cm+(pp?'('+p.pid+')':'')+(showU&&by[p.pp]&&by[p.pp].u!==p.u?'('+p.u+')':'');}
+  function render(p){var ks=kids(p.pid);var lab=label(p);if(!ks.length)return [lab];
+    var groups=[];if(!pp){ks.forEach(function(k){var g=groups[groups.length-1];if(g&&g.p.cm===k.cm&&!kids(k.pid).length&&!kids(g.p.pid).length)g.n++;else groups.push({p:k,n:1});});}else ks.forEach(function(k){groups.push({p:k,n:1});});
+    var sub=groups.map(function(g){var r=render(g.p);if(g.n>1)r=[g.n+'*['+r[0]+']'];return r;});
+    var out=[],ind=' '.repeat(lab.length+1);
+    if(sub.length===1){var r=sub[0];out.push(lab+'───'+r[0]);r.slice(1).forEach(function(l){out.push(' '.repeat(lab.length+3)+l);});return out;}
+    sub.forEach(function(r,i){var first=i===0,last=i===sub.length-1,c=first?'─┬─':last?' └─':' ├─',cont=last?'   ':' │ ';r.forEach(function(l,j){if(j===0)out.push((first?lab:' '.repeat(lab.length))+c+l);else out.push(' '.repeat(lab.length)+cont+l);});});return out;}
+  io.out(render(by[root]).join('\n')+'\n');return 0;}
+});})();
+window.ELSim&&window.ELSim.addCmds(['pstree'],{pstree:'display a tree of processes'},{pstree:'pstree [-p] [-u] [PID|USER]'});
 
 /* gamification: shared app namespace, store, XP/levels/badges/streak, toasts, confetti, dashboard */
 (function(){'use strict';
@@ -8415,6 +8559,124 @@ function renderCards(){$$('.mod-play').forEach(function(box){var mod=+box.getAtt
   $$('[data-start]',c).forEach(function(b){b.onclick=function(){var id=b.getAttribute('data-start');if(isDone(byId(id)))EL.resetupMission(id);EL.startMission(id);};});});}
 EL.renderMissions=function(){renderCards();renderPanel();};
 EL.on('progress',function(){renderCards();});
+})();
+
+/* missions for modules 14-25 (appended to EL.MISSIONS) */
+(function(){'use strict';var EL=window.EL,C=EL.C,M=EL.MISSIONS;if(!M||!C)return;var HM='/home/mohamed',L=HM+'/labs';
+function sim(){return EL.sim;}
+function setup(lines){return function(){var s=sim();s.asRoot(function(){var self=this;lines.forEach(function(l){self.exec(l,{});});self.exec('chown -R mohamed:mohamed '+L,{});});};}
+function put(p,txt){return "printf '%s' '"+txt.replace(/'/g,"'\\''")+"' > "+p;}
+function S(){return sim().S;}
+function procs(){return (S().procs||[]);}
+function lines(l){return C.lines(l);}
+M.push(
+/* ---- Module 14 ---- */
+{id:'14a',mod:14,title:'تقرير الـ UART ports من CSV',story:'عندك ملف ports.csv فيه أجهزة الـ serial على البورد. المدير عايز قوايم مختلفة منه — من غير Excel.',setup:setup(['rm -rf '+L+'/m14','mkdir -p '+L+'/m14',put(L+'/m14/ports.csv','name,baud,dev\nconsole,115200,ttyS0\ngps,9600,ttyS1\nmodem,57600,ttyS2\ndebug,115200,ttyS4\n')]),steps:[
+ {t:'ادخل ~/labs/m14 واطبع عمود الـ dev بس (العمود التالت، الفاصل ,)',hint:'cut -d, -f3 ports.csv',sol:'cd ~/labs/m14; cut -d, -f3 ports.csv',ok:function(l){return C.cmd(l,/cut/)&&C.out(l,/ttyS0/)&&!C.out(l,/console/);}},
+ {t:'رتّب الأجهزة بالـ baud رقمياً من الأكبر للأصغر — من غير سطر الـ header',hint:'tail -n +2 ports.csv | sort -t, -k2 -nr',sol:'tail -n +2 ports.csv | sort -t, -k2 -nr',ok:function(l){var x=lines(l);return x.length===4&&/,115200,/.test(x[0])&&/^gps,9600/.test(x[3])&&!C.out(l,/name,baud/);}},
+ {t:'اطبع أسماء الـ devices بالـ CAPITAL (cut + tr)',hint:'cut -d, -f3 ports.csv | tr a-z A-Z',sol:'cut -d, -f3 ports.csv | tr a-z A-Z',ok:function(l){return C.cmd(l,/tr/)&&C.out(l,/TTYS0/);}}]},
+{id:'14b',mod:14,title:'ابعت التعديل كـ patch',story:'زميلك عنده config.orig القديم. بدل ما تبعتله الملف كله، ابعتله الفرق بس وهو يطبقه.',setup:setup(['rm -rf '+L+'/m14p','mkdir -p '+L+'/m14p',put(L+'/m14p/config.orig','baud=9600\nparity=none\nstop=1\n'),put(L+'/m14p/config.new','baud=115200\nparity=none\nstop=1\nflow=rts\n')]),steps:[
+ {t:'ادخل ~/labs/m14p واعمل unified diff بين config.orig و config.new واحفظه في fix.patch',hint:'diff -u config.orig config.new > fix.patch',sol:'cd ~/labs/m14p; diff -u config.orig config.new > fix.patch',ok:function(){var t=C.txt(L+'/m14p/fix.patch');return !!t&&/\+baud=115200/.test(t)&&/^@@/m.test(t);}},
+ {t:'طبّق الـ patch على config.orig',hint:'patch config.orig < fix.patch',sol:'patch config.orig < fix.patch',ok:function(){return C.txt(L+'/m14p/config.orig')===C.txt(L+'/m14p/config.new');}},
+ {t:'اتأكد بـ diff إن الملفين بقوا زي بعض (مفيش output والـ exit status صفر)',hint:'diff config.orig config.new; echo $?',sol:'diff config.orig config.new && echo same',ok:function(l){return C.cmd(l,/diff/)&&!C.out(l,/^[<>]/m)&&(l.rc===0);}}]},
+/* ---- Module 15 ---- */
+{id:'15a',mod:15,title:'sed على uEnv.txt بتاع U-Boot',story:'ملف uEnv.txt فيه console بـ baud غلط. عدّله بـ sed من غير editor — زي ما هتعمل على 50 بورد بـ script.',setup:setup(['rm -rf '+L+'/m15','mkdir -p '+L+'/m15',put(L+'/m15/uEnv.txt','# U-Boot env\nbootdelay=3\nconsole=ttyS0,9600\n#debug=1\nuname_r=6.12.48\n')]),steps:[
+ {t:'ادخل ~/labs/m15 واطبع uEnv.txt من غير سطور الـ comments',hint:"sed '/^#/d' uEnv.txt",sol:"cd ~/labs/m15; sed '/^#/d' uEnv.txt",ok:function(l){return C.cmd(l,/sed/)&&C.out(l,/bootdelay/)&&!C.out(l,/#/);}},
+ {t:'غيّر 9600 لـ 115200 في الملف نفسه، واحتفظ بنسخة uEnv.txt.bak',hint:"sed -i.bak 's/9600/115200/' uEnv.txt",sol:"sed -i.bak 's/9600/115200/' uEnv.txt",ok:function(){var t=C.txt(L+'/m15/uEnv.txt'),b=C.txt(L+'/m15/uEnv.txt.bak');return !!t&&/ttyS0,115200/.test(t)&&!!b&&/ttyS0,9600/.test(b);}},
+ {t:'اطبع سطر الـ console بس بـ sed (من غير grep)',hint:"sed -n '/console/p' uEnv.txt",sol:"sed -n '/console/p' uEnv.txt",ok:function(l){return C.cmd(l,/sed\s+-n/)&&lines(l).length===1&&C.out(l,/115200/);}}]},
+{id:'15b',mod:15,title:'awk — قيس وقت الـ boot',story:'قِست وقت كل مرحلة في الـ boot بالـ ms في boot.csv. طلّع منه أرقام تنفع في تقرير.',setup:setup(['rm -rf '+L+'/m15b','mkdir -p '+L+'/m15b',put(L+'/m15b/boot.csv','stage,ms\nrom,120\nspl,340\nuboot,1450\nkernel,2900\nsystemd,4100\n')]),steps:[
+ {t:'ادخل ~/labs/m15b واطبع أسماء المراحل اللي أخدت أكتر من 1000ms',hint:"awk -F, 'NR>1 && $2>1000 {print $1}' boot.csv",sol:"cd ~/labs/m15b; awk -F, 'NR>1 && $2>1000 {print $1}' boot.csv",ok:function(l){return C.same(lines(l),['uboot','kernel','systemd']);}},
+ {t:'احسب الوقت الإجمالي (مجموع العمود التاني)',hint:"awk -F, 'NR>1{s+=$2} END{print s}' boot.csv",sol:"awk -F, 'NR>1{s+=$2} END{print s}' boot.csv",ok:function(l){return C.cmd(l,/awk/)&&/^\s*8910\s*$/.test(l.out||'');}},
+ {t:'اطبع كل مرحلة ووقتها بالثواني برقمين عشريين (kernel 2.90)',hint:"awk -F, 'NR>1{printf \"%s %.2f\\n\", $1, $2/1000}' boot.csv",sol:"awk -F, 'NR>1{printf \"%s %.2f\\n\", $1, $2/1000}' boot.csv",ok:function(l){return C.out(l,/kernel 2\.90/)&&C.out(l,/rom 0\.12/);}}]},
+/* ---- Module 16 ---- */
+{id:'16a',mod:16,title:'Backup ورجوع للـ rootfs',story:'قبل ما تعمل flash لنسخة جديدة، خد backup للـ rootfs القديم في أرشيف واحد مضغوط، واتأكد إنك تقدر ترجعه.',setup:setup(['rm -rf '+L+'/m16','mkdir -p '+L+'/m16/rootfs/etc '+L+'/m16/rootfs/usr/bin','echo beaglebone > '+L+'/m16/rootfs/etc/hostname','echo "/dev/mmcblk0p2 / ext4 defaults 0 1" > '+L+'/m16/rootfs/etc/fstab','echo app > '+L+'/m16/rootfs/usr/bin/app']),steps:[
+ {t:'ادخل ~/labs/m16 واعمل أرشيف rootfs.tar.gz (gzip) للفولدر rootfs',hint:'tar czf rootfs.tar.gz rootfs',sol:'cd ~/labs/m16; tar czf rootfs.tar.gz rootfs',ok:function(){return C.file(L+'/m16/rootfs.tar.gz');}},
+ {t:'اعرض محتوى الأرشيف من غير ما تفكه',hint:'tar tzf rootfs.tar.gz',sol:'tar tzf rootfs.tar.gz',ok:function(l){return C.cmd(l,/tar\s+-?\w*t/)&&C.out(l,/rootfs\/etc\/hostname/);}},
+ {t:'اعمل فولدر restore وفك الأرشيف جواه بـ -C',hint:'mkdir restore; tar xzf rootfs.tar.gz -C restore',sol:'mkdir restore && tar xzf rootfs.tar.gz -C restore',ok:function(){return C.txt(L+'/m16/restore/rootfs/etc/hostname')==='beaglebone\n';}}]},
+{id:'16b',mod:16,title:'gzip ولا xz؟ قيس بنفسك',story:'الـ flash على البورد صغيرة. جرّب الاتنين على نفس الـ log وشوف مين أصغر.',setup:setup(['rm -rf '+L+'/m16b','mkdir -p '+L+'/m16b','for i in 1 2 3 4 5 6 7 8; do cat /etc/services >> '+L+'/m16b/big.log 2>/dev/null; done','seq 1 4000 >> '+L+'/m16b/big.log']),steps:[
+ {t:'ادخل ~/labs/m16b واضغط big.log بـ gzip واحتفظ بالأصل',hint:'gzip -k big.log',sol:'cd ~/labs/m16b; gzip -k big.log',ok:function(){return C.file(L+'/m16b/big.log')&&C.file(L+'/m16b/big.log.gz');}},
+ {t:'اضغطه بـ xz كمان واحتفظ بالأصل',hint:'xz -k big.log',sol:'xz -k big.log',ok:function(){return C.file(L+'/m16b/big.log.xz')&&C.file(L+'/m16b/big.log');}},
+ {t:'قارن الأحجام التلاتة بـ ls -l بأحجام مقروءة',hint:'ls -lh big.log*',sol:'ls -lh big.log*',ok:function(l){return C.cmd(l,/ls/)&&C.out(l,/big\.log\.gz/)&&C.out(l,/big\.log\.xz/);}}]},
+/* ---- Module 17 ---- */
+{id:'17a',mod:17,title:'current → release (symlinks و hard links)',story:'أنظمة الـ OTA بتحط كل نسخة في فولدر، و symlink اسمه current بيشاور على الشغّالة. التحويل = تغيير الـ link بس.',setup:setup(['rm -rf '+L+'/m17','mkdir -p '+L+'/m17/release-1.0 '+L+'/m17/release-2.0','echo v1 > '+L+'/m17/release-1.0/app','echo v2 > '+L+'/m17/release-2.0/app']),steps:[
+ {t:'ادخل ~/labs/m17 واعمل symlink اسمه current بيشاور على release-2.0',hint:'ln -s release-2.0 current',sol:'cd ~/labs/m17; ln -s release-2.0 current',ok:function(){var x=C.q(L+'/m17/current');return !!x&&x.type==='l'&&/release-2\.0\/?$/.test(x.target||'');}},
+ {t:'اعمل hard link للملف release-2.0/app اسمه app.hard',hint:'ln release-2.0/app app.hard',sol:'ln release-2.0/app app.hard',ok:function(){var x=C.q(L+'/m17/app.hard');return !!x&&x.type==='f'&&C.txt(L+'/m17/app.hard')==='v2\n';}},
+ {t:'اعرض app.hard و release-2.0/app بأرقام الـ inodes — لازم يطلعوا نفس الرقم',hint:'ls -li app.hard release-2.0/app',sol:'ls -li app.hard release-2.0/app',ok:function(l){var x=lines(l).map(function(s){return s.split(/\s+/)[0];});return C.cmd(l,/ls\s+-\w*i/)&&x.length===2&&x[0]===x[1];}}]},
+{id:'17b',mod:17,title:'ركّب الـ USB flash',story:'دخّلت USB flash فيها firmware جديد. اعرف اسمها، ركّبها، وفكّها بأمان.',setup:setup(['umount /mnt/usb','rm -rf /mnt/usb']),steps:[
+ {t:'اعرض الـ block devices وأنواع الـ filesystems والـ labels (محتاج root)',hint:'sudo blkid',sol:'sudo blkid',ok:function(l){return C.out(l,/USBKEY/);}},
+ {t:'اعمل الفولدر /mnt/usb وركّب عليه /dev/sdb1',hint:'sudo mkdir -p /mnt/usb && sudo mount /dev/sdb1 /mnt/usb',sol:'sudo mkdir -p /mnt/usb && sudo mount /dev/sdb1 /mnt/usb',ok:function(){return (S().mnt||[]).some(function(m){return m[0]==='/dev/sdb1'&&m[1]==='/mnt/usb';});}},
+ {t:'اتأكد إنها متركبة (mount + grep)',hint:'mount | grep sdb1',sol:'mount | grep sdb1',ok:function(l){return C.out(l,/\/dev\/sdb1 on \/mnt\/usb/);}},
+ {t:'فكّها (umount) قبل ما تشيلها',hint:'sudo umount /mnt/usb',sol:'sudo umount /mnt/usb',ok:function(l){return C.cmd(l,/umount/)&&!(S().mnt||[]).some(function(m){return m[1]==='/mnt/usb';});}}]},
+/* ---- Module 18 ---- */
+{id:'18a',mod:18,title:'دورة حياة package',story:'محتاج htop تراقب بيه البورد، وبعد ما تخلص هتشيله بالكامل عشان المساحة.',steps:[
+ {t:'اتأكد إن vim متثبّت (dpkg -l + grep)',hint:'dpkg -l | grep vim',sol:'dpkg -l | grep vim',ok:function(l){return C.cmd(l,/dpkg\s+-l/)&&C.out(l,/^ii\s+vim/m);}},
+ {t:'ثبّت htop',hint:'sudo apt install -y htop',sol:'sudo apt install -y htop',ok:function(){return !!(S().inst||{}).htop;}},
+ {t:'اعرض الملفات اللي htop حطها على النظام',hint:'dpkg -L htop',sol:'dpkg -L htop',ok:function(l){return C.out(l,/\/usr\/bin\/htop/);}},
+ {t:'اعرف /usr/bin/htop جه من أنهي package',hint:'dpkg -S /usr/bin/htop',sol:'dpkg -S /usr/bin/htop',ok:function(l){return C.out(l,/^htop:/m);}},
+ {t:'شيله هو والـ config files بتاعته',hint:'sudo apt purge -y htop',sol:'sudo apt purge -y htop',ok:function(l){return C.cmd(l,/purge/)&&!(S().inst||{}).htop;}}]},
+/* ---- Module 19 ---- */
+{id:'19a',mod:19,title:'Jobs: foreground و background',story:'شغّال build طويل ومحتاج الـ terminal في نفس الوقت. اتعلم تلعب بالـ jobs.',steps:[
+ {t:'شغّل sleep 600 في الـ background',hint:'sleep 600 &',sol:'sleep 600 &',ok:function(l){return C.cmd(l,/sleep\s+\d+\s*&/)&&procs().some(function(p){return p.cm==='sleep';});}},
+ {t:'اعرض الـ jobs بتاعتك',hint:'jobs',sol:'jobs',ok:function(l){return C.cmd(l,/^\s*jobs/)&&C.out(l,/Running/);}},
+ {t:'شغّل sleep 500 بأولوية واطية (nice 15) في الـ background',hint:'nice -n 15 sleep 500 &',sol:'nice -n 15 sleep 500 &',ok:function(){return procs().some(function(p){return p.cm==='sleep'&&p.ni===15;});}},
+ {t:'اعرض الـ PID والـ nice والاسم لـ processes الـ terminal بتاعك',hint:'ps -o pid,ni,comm',sol:'ps -o pid,ni,comm',ok:function(l){return C.cmd(l,/ps/)&&C.out(l,/\b15 sleep/);}}]},
+{id:'19b',mod:19,title:'شجرة العيلة والأولوية',story:'مين أبو مين؟ وإزاي توطّي أولوية process شغّالة من غير ما تقفلها.',steps:[
+ {t:'شغّل sleep 900 في الـ background',hint:'sleep 900 &',sol:'sleep 900 &',ok:function(){return procs().some(function(p){return p.cm==='sleep'&&/900/.test(p.c);});}},
+ {t:'اعرض شجرة الـ processes بالـ PIDs',hint:'pstree -p',sol:'pstree -p',ok:function(l){return C.cmd(l,/pstree/)&&C.out(l,/systemd\(1\)/)&&C.out(l,/sleep\(\d+\)/);}},
+ {t:'وطّي أولوية الـ sleep لـ 19 بـ renice (هات الـ PID بـ pgrep)',hint:'renice -n 19 -p $(pgrep -n sleep)',sol:'renice -n 19 -p $(pgrep -n sleep)',ok:function(){return procs().some(function(p){return p.cm==='sleep'&&p.ni===19;});}}]},
+/* ---- Module 20 ---- */
+{id:'20a',mod:20,title:'process عالقة بتاكل الـ CPU',story:'حد شغّل yes بالغلط والـ CPU بقى 100%. اكتشف واقتل.',steps:[
+ {t:'شغّل yes > /dev/null في الـ background (ده «البرنامج البايظ»)',hint:'yes > /dev/null &',sol:'yes > /dev/null &',ok:function(){return procs().some(function(p){return p.cm==='yes';});}},
+ {t:'شوف الـ load في top (مرة واحدة batch)',hint:'top -bn1 | head',sol:'top -bn1 | head',ok:function(l){return C.out(l,/load average: 0\.9/);}},
+ {t:'اعرف الـ PID بتاعه بالاسم',hint:'pgrep yes',sol:'pgrep yes',ok:function(l){return C.cmd(l,/pgrep/)&&/^\d+\s*$/.test(l.out||'');}},
+ {t:'ابعتله SIGTERM بالاسم',hint:'pkill yes',sol:'pkill yes',ok:function(l){return C.cmd(l,/kill/)&&!procs().some(function(p){return p.cm==='yes';});}}]},
+{id:'20b',mod:20,title:'الـ signals بالأرقام',story:'TERM بأدب، KILL لما مفيش حل. وعلى طول اعرف الأرقام.',steps:[
+ {t:'اعرض كل أسماء الـ signals',hint:'kill -l',sol:'kill -l',ok:function(l){return C.cmd(l,/kill\s+-l/)&&C.out(l,/KILL/);}},
+ {t:'شغّل sleep 1000 في الـ background',hint:'sleep 1000 &',sol:'sleep 1000 &',ok:function(){return procs().some(function(p){return p.cm==='sleep'&&/1000/.test(p.c);});}},
+ {t:'اقتله بـ SIGKILL (9) — بالـ PID أو برقم الـ job',hint:'jobs عشان تعرف رقمه، وبعدين kill -9 %N — أو kill -9 $(pgrep -f "sleep 1000")',sol:'kill -9 $(pgrep -f "sleep 1000")',ok:function(l){return C.cmd(l,/kill\s+-(9|KILL|SIGKILL)\b/)&&!procs().some(function(p){return p.cm==='sleep'&&/1000/.test(p.c);});}}]},
+/* ---- Module 21 ---- */
+{id:'21a',mod:21,title:'جدول backup بـ cron',story:'عايز backup كل يوم الساعة 3 الفجر، وفحص كل 5 دقايق. ومن غير crontab -e.',steps:[
+ {t:'اتأكد إن مفيش crontab ليك لسه',hint:'crontab -l',sol:'crontab -l',ok:function(l){return C.cmd(l,/crontab\s+-l/);}},
+ {t:'ثبّت crontab فيه سطر واحد: كل يوم 3:00 شغّل /usr/local/bin/backup.sh (من stdin)',hint:'echo "0 3 * * * /usr/local/bin/backup.sh" | crontab -',sol:'echo "0 3 * * * /usr/local/bin/backup.sh" | crontab -',ok:function(){var t=(S().cron||{}).mohamed||'';return /^0\s+3\s+\*\s+\*\s+\*\s+\/usr\/local\/bin\/backup\.sh/m.test(t);}},
+ {t:'ضيف سطر تاني (كل 5 دقايق /usr/local/bin/check.sh) من غير ما تمسح الأول: خزّن الحالي في ملف، ضيف عليه، وثبّته',hint:'crontab -l > my.cron; echo "*/5 * * * * /usr/local/bin/check.sh" >> my.cron; crontab my.cron',sol:'crontab -l > ~/my.cron; echo "*/5 * * * * /usr/local/bin/check.sh" >> ~/my.cron; crontab ~/my.cron',ok:function(){var t=(S().cron||{}).mohamed||'';return /backup\.sh/.test(t)&&/^\*\/5\s+\*\s+\*\s+\*\s+\*\s+\/usr\/local\/bin\/check\.sh/m.test(t);}},
+ {t:'اعرض الـ crontab النهائي',hint:'crontab -l',sol:'crontab -l',ok:function(l){return C.cmd(l,/crontab\s+-l/)&&C.out(l,/check\.sh/)&&C.out(l,/backup\.sh/);}}]},
+{id:'21b',mod:21,title:'at — مهمة مرة واحدة',story:'عايز تعمل reboot للـ service بالليل مرة واحدة بس. ده شغل at مش cron.',steps:[
+ {t:'جدول الأمر touch /tmp/at-done الساعة 03:00',hint:'echo "touch /tmp/at-done" | at 03:00',sol:'echo "touch /tmp/at-done" | at 03:00',ok:function(l){return C.cmd(l,/\|\s*at\s+/);}},
+ {t:'اعرض المهام المستنية',hint:'atq',sol:'atq',ok:function(l){return C.cmd(l,/atq/)&&C.out(l,/03:00/);}},
+ {t:'الغيها (هات رقمها من atq)',hint:'atrm 1',sol:'atrm 1',ok:function(l){return C.cmd(l,/atrm\s+\d+/)&&l.rc===0;}}]},
+/* ---- Module 22 ---- */
+{id:'22a',mod:22,title:'اكتب واقرا الـ logs',story:'الـ sensor script بتاعك لازم يكتب تحذيراته في الـ system log عشان تلاقيها بعدين مع رسايل الـ kernel.',steps:[
+ {t:'اكتب رسالة «temp high» بـ tag اسمه sensor و priority ‏user.warning',hint:'logger -t sensor -p user.warning "temp high"',sol:'logger -t sensor -p user.warning "temp high"',ok:function(){var t=C.txt('/var/log/syslog')||'';return /sensor(\[\d+\])?: temp high/.test(t);}},
+ {t:'اعرض رسايل الـ tag ده بس من الـ journal',hint:'journalctl -t sensor',sol:'journalctl -t sensor',ok:function(l){return C.cmd(l,/journalctl/)&&C.out(l,/temp high/)&&!C.out(l,/Booting/);}},
+ {t:'اعرض الرسايل اللي priority بتاعتها err وأخطر',hint:'journalctl -p err',sol:'journalctl -p err',ok:function(l){return C.cmd(l,/-p\s*err|--priority=err/)&&C.out(l,/ERROR overrun/);}},
+ {t:'دوّر على أخطاء الـ EXT4 في /var/log/syslog (محتاج root)',hint:'sudo grep -i ext4 /var/log/syslog',sol:'sudo grep -i ext4 /var/log/syslog',ok:function(l){return C.out(l,/EXT4-fs/);}}]},
+/* ---- Module 23 ---- */
+{id:'23a',mod:23,title:'شغّل الـ service بتاعتك مع الـ boot',story:'كتبت sensord.service في /etc/systemd/system. عايزها تشتغل دلوقتي ومع كل boot.',setup:function(){var s=sim();s.asRoot(function(){this.exec('systemctl disable --now sensord',{});});},steps:[
+ {t:'اعرض حالة ssh الأول عشان تتعود على الشكل',hint:'systemctl status ssh',sol:'systemctl status ssh',ok:function(l){return C.cmd(l,/systemctl\s+status/)&&C.out(l,/active \(running\)/);}},
+ {t:'اعرض حالة sensord — المفروض inactive',hint:'systemctl status sensord',sol:'systemctl status sensord',ok:function(l){return C.out(l,/sensord\.service/)&&C.out(l,/inactive/);}},
+ {t:'فعّلها وشغّلها في أمر واحد',hint:'sudo systemctl enable --now sensord',sol:'sudo systemctl enable --now sensord',ok:function(){var v=(S().svc||{}).sensord;return !!v&&v.ac&&v.en===1;}},
+ {t:'اتأكد إنها enabled بأمر بيطبع كلمة واحدة',hint:'systemctl is-enabled sensord',sol:'systemctl is-enabled sensord',ok:function(l){return C.cmd(l,/is-enabled/)&&/^enabled\s*$/.test(l.out||'');}}]},
+{id:'23b',mod:23,title:'الـ target الافتراضي',story:'البورد مش محتاجة GUI. اتأكد إنها بتعمل boot لـ multi-user.target.',steps:[
+ {t:'اعرض الـ default target',hint:'systemctl get-default',sol:'systemctl get-default',ok:function(l){return C.cmd(l,/get-default/)&&C.out(l,/\.target/);}},
+ {t:'خليه multi-user.target',hint:'sudo systemctl set-default multi-user.target',sol:'sudo systemctl set-default multi-user.target',ok:function(l){return C.cmd(l,/set-default/)&&S().target==='multi-user.target';}},
+ {t:'اعرض الـ services الشغّالة بس',hint:'systemctl list-units --type=service --state=running',sol:'systemctl list-units --type=service --state=running',ok:function(l){return C.cmd(l,/list-units/)&&C.out(l,/cron\.service/);}}]},
+/* ---- Module 24 ---- */
+{id:'24a',mod:24,title:'فكّر في العنوان',story:'قبل أي troubleshooting: إنت مين على الشبكة؟ والـ gateway مين؟ وكام جهاز يساع الـ subnet ده؟',steps:[
+ {t:'اعرض الـ IPs بشكل مختصر (brief)',hint:'ip -br a',sol:'ip -br a',ok:function(l){return C.cmd(l,/ip\s+-br/)&&C.out(l,/192\.168\.7\.2\/24/);}},
+ {t:'اعرض الـ routing table واعرف الـ default gateway',hint:'ip r',sol:'ip route',ok:function(l){return C.out(l,/default via 192\.168\.7\.1/);}},
+ {t:'احسب بـ bash كام host متاح في /24 (2 أس عدد الـ host bits ناقص 2)',hint:'echo $(( 2**(32-24) - 2 ))',sol:'echo $(( 2**(32-24) - 2 ))',ok:function(l){return C.cmd(l,/\$\(\(/)&&/^\s*254\s*$/.test(l.out||'');}}]},
+/* ---- Module 25 ---- */
+{id:'25a',mod:25,title:'الشبكة وقعت؟ اعمل troubleshooting',story:'البورد مش شايفة الإنترنت. هنمشي طبقة طبقة: الـ interface، الـ gateway، وبعدين بره.',steps:[
+ {t:'ابعت 3 pings للـ gateway',hint:'ping -c 3 192.168.7.1',sol:'ping -c 3 192.168.7.1',ok:function(l){return C.out(l,/3 received/);}},
+ {t:'اقفل eth0 (محاكاة عطل)',hint:'sudo ip link set eth0 down',sol:'sudo ip link set eth0 down',ok:function(){var N=S().net;return !!N&&!N.ifs[1].up;}},
+ {t:'جرّب ping لـ 8.8.8.8 مرة واحدة — لاحظ الـ error',hint:'ping -c 1 8.8.8.8',sol:'ping -c 1 8.8.8.8',ok:function(l){return C.cmd(l,/ping/)&&l.rc!==0;}},
+ {t:'رجّع eth0 تاني',hint:'sudo ip link set eth0 up',sol:'sudo ip link set eth0 up',ok:function(l){var N=S().net;return C.cmd(l,/ip\s+link\s+set.*\bup\b/)&&!!N&&N.ifs[1].up;}},
+ {t:'اتأكد إن الـ DNS والإنترنت رجعوا: ping مرتين لـ google.com',hint:'ping -c 2 google.com',sol:'ping -c 2 google.com',ok:function(l){return C.out(l,/2 received/)&&C.out(l,/ttl=/);}}]},
+{id:'25b',mod:25,title:'جهّز SSH key',story:'هتدخل على البورد كل يوم. بدل الـ password، اعمل key pair.',setup:setup(['rm -f '+HM+'/.ssh/id_ed25519 '+HM+'/.ssh/id_ed25519.pub']),steps:[
+ {t:'اعمل key من نوع ed25519 من غير passphrase في المكان الافتراضي',hint:'ssh-keygen -t ed25519 -N "" -f ~/.ssh/id_ed25519',sol:'ssh-keygen -t ed25519 -N "" -f ~/.ssh/id_ed25519',ok:function(){return C.file(HM+'/.ssh/id_ed25519')&&C.file(HM+'/.ssh/id_ed25519.pub');}},
+ {t:'اعرض صلاحيات ملفات ~/.ssh — لاحظ إن الـ private key ‏600',hint:'ls -l ~/.ssh',sol:'ls -l ~/.ssh',ok:function(l){return C.out(l,/-rw-------.*id_ed25519\s*$/m);}},
+ {t:'اطبع الـ public key (ده اللي بيتنقل للبورد)',hint:'cat ~/.ssh/id_ed25519.pub',sol:'cat ~/.ssh/id_ed25519.pub',ok:function(l){return C.out(l,/^ssh-ed25519 /m);}}]}
+);
 })();
 
 /* per-module interactive quizzes: MCQ, typed command (validated in a sandbox simulator), drag-order, matching */
