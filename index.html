@@ -8815,7 +8815,7 @@ EL.persist=function(){EL.save(KEY,G);};
 var LV=[[0,'🐣 Newbie'],[100,'🐚 Shell Explorer'],[250,'📂 Path Walker'],[450,'🔀 Pipe Plumber'],[700,'🔎 grep Hunter'],[1000,'🧩 Regex Ninja'],[1400,'🔐 Permission Keeper'],[1900,'👥 User Admin'],[2500,'🛠️ Root Guardian'],[3200,'🐧 Kernel Hacker'],[4200,'👑 Embedded Linux Master']];
 EL.level=function(xp){xp=xp==null?G.xp:xp;var i=0;while(i+1<LV.length&&xp>=LV[i+1][0])i++;var next=LV[i+1]?LV[i+1][0]:LV[i][0];return {n:i+1,name:LV[i][1],cur:LV[i][0],next:next,pct:LV[i+1]?Math.round(100*(xp-LV[i][0])/(next-LV[i][0])):100};};
 /* badges */
-var MODS=11;
+var MODS=29;
 EL.BADGES=[
  ['first_cmd','⌨️','أول أمر','نفّذت أول أمر في الـ terminal',function(){return G.cmds>=1;}],
  ['cmd50','💪','50 أمر','نفّذت 50 أمر في الـ simulator',function(){return G.cmds>=50;}],
@@ -8830,7 +8830,7 @@ EL.BADGES=[
  ['flash25','🃏','Flash 25','راجعت 25 flashcard',function(){return G.flash.reviews>=25;}],
  ['vim_master','✍️','Vim Survivor','خلّصت كل تمارين الـ Vim Trainer (وعرفت تخرج من vim 😄)',function(){return EL.VIM_TASKS&&Object.keys(G.vim).length>=EL.VIM_TASKS.length;}],
  ['root','🛡️','With great power','استخدمت sudo/su صح عشان تعمل حاجة admin',function(){return !!G.usedRoot;}],
- ['reader','📖','قارئ نهم','عدّيت على كل الوحدات الـ 11',function(){var n=0;for(var i=1;i<=MODS;i++)if(G.seen['d'+i])n++;return n>=MODS;}],
+ ['reader','📖','قارئ نهم','عدّيت على كل الوحدات الـ 29',function(){var n=0;for(var i=1;i<=MODS;i++)if(G.seen['d'+i])n++;return n>=MODS;}],
  ['boss','👑','Boss Slayer','عدّيت الـ Boss Challenge بـ 70% أو أكتر',function(){return G.boss.best!=null&&G.boss.best>=70;}],
  ['boss_perfect','🐉','Legend','100% في الـ Boss Challenge',function(){return G.boss.best===100;}]
 ];
@@ -10205,10 +10205,11 @@ TH.init=function(){var a=$('#thinkDrills');if(a)drills(a);var b=$('#vimGrammar')
 
 /* final boss challenge: timed mixed exam with score report */
 (function(){'use strict';var EL=window.EL,$=EL.$,$$=EL.$$,esc=EL.esc,h=EL.h;
-var N=22,SECS=15*60;var B=EL.boss={};var box,state=null,timer=null;
-function pick(){var qs=[];for(var m=1;m<=11;m++){var bank=EL.shuffle((EL.QBANK[m]||[]).map(function(q){return {q:q,m:m};}));var typed=bank.filter(function(x){return x.q.k==='type';}),other=bank.filter(function(x){return x.q.k!=='type';});var take=[];if(typed.length)take.push(typed[0]);take=take.concat(other.slice(0,2-take.length));qs=qs.concat(take);}return EL.shuffle(qs).slice(0,N);}
+var N=32,SECS=25*60;var B=EL.boss={};var box,state=null,timer=null;
+function pick(){var one=[],extra=[];for(var m=1;m<=29;m++){var bank=EL.shuffle((EL.QBANK[m]||[]).map(function(q){return {q:q,m:m};}));if(!bank.length)continue;var typed=bank.filter(function(x){return x.q.k==='type';}),other=bank.filter(function(x){return x.q.k!=='type';});var first=(typed.length&&(Math.random()<0.4||!other.length))?typed[0]:other[0];one.push(first);bank.forEach(function(x){if(x!==first)extra.push(x);});}
+  extra=EL.shuffle(extra);var ty=extra.filter(function(x){return x.q.k==='type';});var qs=one.concat(ty.slice(0,Math.max(0,N-one.length)));if(qs.length<N)qs=qs.concat(extra.filter(function(x){return x.q.k!=='type';}).slice(0,N-qs.length));return EL.shuffle(qs).slice(0,N);}
 function fmt(s){s=Math.max(0,s);return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2);}
-function intro(){var G=EL.G;stop();box.innerHTML='<div class="boss-intro"><div class="boss-ico">👑</div><h3>Boss Challenge</h3><p>'+N+' سؤال من كل الـ 11 وحدة (اختيار، اكتب الأمر، رتّب، وصّل) — في <b>'+SECS/60+' دقيقة</b>. الـ typed commands بتتجرّب فعلاً في sandbox. لازم <b>70%</b> عشان تكسب badge «Boss Slayer».</p>'+
+function intro(){var G=EL.G;stop();box.innerHTML='<div class="boss-intro"><div class="boss-ico">👑</div><h3>Boss Challenge</h3><p>'+N+' سؤال من كل الـ 29 وحدة — سؤال على الأقل من كل وحدة (اختيار، اكتب الأمر، رتّب، وصّل) — في <b>'+SECS/60+' دقيقة</b>. الـ typed commands بتتجرّب فعلاً في sandbox. لازم <b>70%</b> عشان تكسب badge «Boss Slayer».</p>'+
   (G.boss.best!=null?'<p class="muted">أحسن نتيجة: <b>'+G.boss.best+'%</b> · عدد المحاولات: '+G.boss.runs+'</p>':'')+'<button class="btn bbig" data-go>⚔️ ابدأ التحدي</button></div>';$('[data-go]',box).onclick=start;}
 function start(){state={qs:pick(),i:0,res:[],t0:Date.now(),left:SECS};render();timer=setInterval(tick,1000);}
 function stop(){if(timer)clearInterval(timer);timer=null;}
