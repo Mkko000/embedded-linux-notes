@@ -653,6 +653,19 @@ body.el-term-open{padding-bottom:min(48vh,460px)}
 .tr-l code{border:0!important;background:none!important;white-space:pre!important;padding:0!important;box-shadow:none!important;font-size:inherit}
 .pb-out div.pbx{display:block}
 .pr-code{direction:ltr;text-align:left}
+#thinkDrills,#vimGrammar{padding:.8rem 1rem}
+.td-tabs,.vg-tabs,.vg-list{display:flex;gap:.35rem;flex-wrap:wrap;margin:.3rem 0 .6rem}
+.td-tabs button,.vg-tabs button,.vg-list button,.td-o button,.vg-ops button,.vg-mots button,#thinkDrills .row button,#vimGrammar .row button{font:inherit;font-size:.86rem;padding:.3rem .7rem;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--text);cursor:pointer}
+.td-tabs button.on,.vg-tabs button.on,.vg-list button.on,.vg-ops button.on,.vg-mots button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.vg-list button.done{box-shadow:inset 0 -3px #1f9d55}
+.td-item{border-top:1px dashed var(--line);padding:.6rem 0}.td-item.done .td-c::after{content:" ✓";color:#1f9d55;font-weight:700}
+.td-c{font-weight:600;margin-bottom:.35rem}.td-o{display:flex;flex-direction:column;gap:.3rem}.td-o button{text-align:right}
+.td-o button.good{border-color:#1f9d55;background:color-mix(in srgb,#1f9d55 15%,var(--card))}.td-o button.bad{border-color:#d64545;background:color-mix(in srgb,#d64545 12%,var(--card))}
+.td-e{font-size:.9rem;margin-top:.35rem}.td-in{flex:1;min-width:200px;font-family:ui-monospace,monospace;padding:.3rem .5rem;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text)}.td-p{font-family:ui-monospace,monospace;color:var(--muted)}
+.vg-ops,.vg-mots{display:flex;gap:.3rem;flex-wrap:wrap;align-items:center;margin:.35rem 0}.vg-res{margin-top:.6rem}.vg-k{font-family:ui-monospace,monospace;font-size:1.3rem;font-weight:700;margin-bottom:.4rem}
+.vg-ba{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}@media (max-width:700px){.vg-ba{grid-template-columns:1fr}}.vim-scr.mini{min-height:0;padding:.4rem .6rem}.vg-reg{margin-top:.4rem;font-size:.88rem}
+.vg-ed{outline:none;min-height:5rem}.vg-ed:focus{box-shadow:0 0 0 2px var(--accent)}.vgoal{background:var(--card);border-radius:8px;padding:.3rem .6rem;margin:.3rem 0}
+.vim-scr.mini,.vg-ed{font-family:ui-monospace,"DejaVu Sans Mono",monospace;white-space:pre}
 </style></head><body>
 <nav class="nav"><div class="nav-in"><a class="brand" href="#top">Embedded Linux <span>· الكورس كامل</span></a><a class="nl" href="#d1"><span class="nn">1</span> OS و Kernel</a><a class="nl" href="#stack"><span class="nn">🔬</span> Embedded Linux من جوه</a><a class="nl" href="#d2"><span class="nn">2</span> Shell و Paths</a><a class="nl" href="#think"><span class="nn">🧠</span> فكّر في الأوامر</a><a class="nl" href="#d3"><span class="nn">3</span> cp · mv · rm</a><a class="nl" href="#d4"><span class="nn">4</span> Wildcards</a><a class="nl" href="#d5"><span class="nn">5</span> Help · Text · Redirection</a><a class="nl" href="#d6"><span class="nn">6</span> grep · Pipes · Quotes</a><a class="nl" href="#d7"><span class="nn">7</span> Regex</a><a class="nl" href="#d8"><span class="nn">8</span> nano · vim · gedit</a><a class="nl" href="#editors"><span class="nn">✍️</span> Vim/Neovim من جوه</a><a class="nl" href="#d9"><span class="nn">9</span> Users & Groups</a><a class="nl" href="#d10"><span class="nn">10</span> Permissions</a><a class="nl" href="#d11"><span class="nn">11</span> find & locate</a><a class="nl" href="#d12"><span class="nn">12</span> Shell & أول script</a><a class="nl" href="#d13"><span class="nn">13</span> Environment & init files</a><a class="nl" href="#d14"><span class="nn">14</span> cut · paste · sort · tr · diff · patch</a><a class="nl" href="#d15"><span class="nn">15</span> sed & awk</a><a class="nl" href="#d16"><span class="nn">16</span> Compression & tar</a><a class="nl" href="#d17"><span class="nn">17</span> Filesystems & Partitions</a><a class="nl" href="#d18"><span class="nn">18</span> Packages: dpkg/apt</a><a class="nl" href="#d19"><span class="nn">19</span> Processes</a><a class="nl" href="#d20"><span class="nn">20</span> Signals & kill</a><a class="nl" href="#d21"><span class="nn">21</span> at · cron · daemons</a><a class="nl" href="#d22"><span class="nn">22</span> Logs</a><a class="nl" href="#d23"><span class="nn">23</span> Boot بالتفصيل</a><a class="nl" href="#d24"><span class="nn">24</span> Networking basics</a><a class="nl" href="#d25"><span class="nn">25</span> ip · ping · ssh</a><a class="nl" href="#d26"><span class="nn">26</span> Bash conditions</a><a class="nl" href="#d27"><span class="nn">27</span> Arithmetic & loops</a><a class="nl" href="#d28"><span class="nn">28</span> Arrays & strings</a><a class="nl" href="#d29"><span class="nn">29</span> Functions · trap · debug</a><a class="nl" href="#sheet"><span class="nn">★</span> Cheat-sheet</a><a class="nl" href="#gloss"><span class="nn">📖</span> Glossary</a><a class="nl" href="#guide"><span class="nn">✔</span> إزاي تجاوب أي سؤال</a><a class="nl" href="#flash"><span class="nn">🃏</span> Flashcards</a><a class="nl" href="#boss"><span class="nn">👑</span> Boss Challenge</a><a class="nl" href="#dash"><span class="nn">🏆</span> لوحة التقدم</a><button class="theme-btn" id="themeBtn">🌙 غامق</button></div><div class="progress" id="prog"></div></nav>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker></defs></svg><main id="top"><div class="hero"><div class="badges"><span class="badge">Embedded Linux</span><span class="badge">by Mohammed El Sisi</span><span class="badge">29 Module · كورس تفاعلي</span></div>
@@ -8557,6 +8570,270 @@ F.init=function(){box=document.getElementById('flashBox');cards=load();if(!box||
 F._state=function(){return {cards:cards.length,queue:queue.length,cur:cur&&cur.id};};F._rate=rate;F._flip=flip;
 })();
 
+/* fuller vim engine: operator + [count] + motion | text-object grammar, dot-repeat, undo, ex ranges — differential-tested against real Vim 9.1 */
+(function(G){'use strict';
+function cls(ch,big){if(ch==null||ch===' '||ch==='\t')return 0;if(big)return 1;return /[A-Za-z0-9_\u00C0-\uFFFF]/.test(ch)?1:2;}
+function V2(text,r,c){this.L=String(text).split('\n');this.r=r||0;this.c=c||0;this.mode='normal';this.cmd='';this.pend='';this.buf=[];this.reg={t:'',line:false};this.regs={};
+  this.undo=[];this.redo=[];this.msg='';this.saved=String(text);this.quit=false;this.wrote=false;this.keys=[];this.search='';this.sdir=1;this.cntS='';this.err=false;
+  this.sw=8;this.et=false;this.lastF=null;this.dot=null;this.rec=null;this.replaying=false;this.ins=null;this.curswant=0;}
+var P=V2.prototype;
+P.text=function(){return this.L.join('\n');};
+P.snap=function(){this.undo.push({L:this.L.slice(),r:this.r,c:this.c});if(this.undo.length>200)this.undo.shift();this.redo=[];};
+P.mod=function(){this.modified=this.text()!==this.saved;};
+P.clamp=function(){var n=this.L.length;if(this.r>=n)this.r=n-1;if(this.r<0)this.r=0;var len=this.L[this.r].length,max=this.mode==='insert'?len:Math.max(0,len-1);if(this.c>max)this.c=max;if(this.c<0)this.c=0;};
+P.fnb=function(r){var m=/\S/.exec(this.L[r]);return m?m.index:Math.max(0,this.L[r].length-(this.L[r].length?1:0));};
+/* ---------- word motions (work on a flat position model) ---------- */
+P.chAt=function(r,c){var l=this.L[r];return c<l.length?l[c]:null;};
+P.next=function(p){var l=this.L[p[0]];if(p[1]<l.length-1)return [p[0],p[1]+1];if(p[0]<this.L.length-1)return [p[0]+1,-1];return null;}; /* -1 = virtual newline position before col 0 of next line handled below */
+P.wordFwd=function(r,c,big){var L=this.L,l=L[r],k=cls(l[c],big);
+  if(c<l.length&&k){while(c<l.length&&cls(l[c],big)===k)c++;}
+  while(true){while(c<L[r].length&&cls(L[r][c],big)===0)c++;if(c<L[r].length)return [r,c];if(r>=L.length-1)return [r,Math.max(0,L[r].length-1),'eof'];r++;c=0;if(!L[r].length)return [r,0];}};
+P.wordEnd=function(r,c,big){var L=this.L;c++;while(true){while(c<L[r].length&&cls(L[r][c],big)===0)c++;if(c<L[r].length)break;if(r>=L.length-1)return [r,Math.max(0,L[r].length-1)];r++;c=0;}
+  var k=cls(L[r][c],big);while(c+1<L[r].length&&cls(L[r][c+1],big)===k)c++;return [r,c];};
+P.wordBack=function(r,c,big){var L=this.L;c--;while(true){while(c>=0&&cls(L[r][c],big)===0)c--;if(c>=0)break;if(r===0)return [0,0];r--;c=L[r].length-1;if(L[r].length===0)return [r,0];}
+  var k=cls(L[r][c],big);while(c>0&&cls(L[r][c-1],big)===k)c--;return [r,c];};
+P.wordEndBack=function(r,c,big){var L=this.L,k=cls(L[r][c],big);
+  if(k){while(c>=0&&cls(L[r][c],big)===k)c--;}
+  while(true){while(c>=0&&cls(L[r][c],big)===0)c--;if(c>=0)return [r,c];if(r===0)return [0,0];r--;c=L[r].length-1;if(!L[r].length)return [r,0];}};
+P.para=function(r,dir,n){var L=this.L;for(var i=0;i<n;i++){while(r+dir>=0&&r+dir<L.length&&L[r]===''&&L[r+dir]==='')r+=dir;
+  r+=dir;while(r>=0&&r<L.length&&L[r]!=='')r+=dir;if(r<0){r=0;break;}if(r>=L.length){r=L.length-1;return [r,Math.max(0,L[r].length-1),'end'];}}return [r,0];};
+var PAIRS={'(':')','[':']','{':'}',')':'(',']':'[','}':'{'};
+P.match=function(r,c){var l=this.L[r],i=c;while(i<l.length&&!PAIRS[l[i]])i++;if(i>=l.length)return null;var o=l[i],cl=PAIRS[o],dir='([{'.indexOf(o)>=0?1:-1,d=0,R=r,C=i;
+  while(true){var ch=this.L[R][C];if(ch===o)d++;else if(ch===cl){d--;if(!d)return [R,C];}C+=dir;while(C<0||C>=this.L[R].length){R+=dir;if(R<0||R>=this.L.length)return null;C=dir>0?0:this.L[R].length-1;if(this.L[R].length)break;}}};
+/* motion => {r,c,lw:linewise,inc:inclusive} */
+P.motion=function(m,n,cnt,op){var r=this.r,c=this.c,L=this.L,i,p,len=L[r].length;
+  switch(m){
+  case 'h':case 'Backspace':return c===0&&!op?null:{r:r,c:Math.max(0,c-n)};
+  case 'l':case ' ':return {r:r,c:Math.min(op?len:Math.max(0,len-1),c+n)};
+  case 'j':case 'Enter':case '+':return r+n>L.length-1&&r===L.length-1?null:{r:Math.min(L.length-1,r+n),c:c,lw:1,keep:1,fnb:m!=='j'};
+  case 'k':case '-':return r===0?null:{r:Math.max(0,r-n),c:c,lw:1,keep:1,fnb:m==='-'};
+  case '0':return {r:r,c:0};
+  case '^':return {r:r,c:this.fnb(r)};
+  case '_':return {r:Math.min(L.length-1,r+n-1),c:this.fnb(Math.min(L.length-1,r+n-1)),lw:1};
+  case '$':var rr=Math.min(L.length-1,r+n-1);return {r:rr,c:Math.max(0,L[rr].length-1),inc:1,dollar:1};
+  case 'w':case 'W':p=[r,c];var big=m==='W';for(i=0;i<n;i++){var q=this.wordFwd(p[0],p[1],big);
+      if(op&&i===n-1&&q[0]>p[0]){q=[p[0],L[p[0]].length];}
+      if(q[2]==='eof'){q=[q[0],op?L[q[0]].length:q[1]];p=q;break;}p=q;}return {r:p[0],c:p[1]};
+  case 'e':case 'E':p=[r,c];for(i=0;i<n;i++)p=this.wordEnd(p[0],p[1],m==='E');return {r:p[0],c:p[1],inc:1};
+  case 'b':case 'B':p=[r,c];for(i=0;i<n;i++)p=this.wordBack(p[0],p[1],m==='B');return {r:p[0],c:p[1]};
+  case 'ge':case 'gE':p=[r,c];for(i=0;i<n;i++)p=this.wordEndBack(p[0],p[1],m==='gE');return {r:p[0],c:p[1],inc:1};
+  case 'gg':var t=cnt?Math.min(L.length,n)-1:0;return {r:t,c:this.fnb(t),lw:1};
+  case 'G':t=cnt?Math.min(L.length,n)-1:L.length-1;return {r:t,c:this.fnb(t),lw:1};
+  case '%':p=this.match(r,c);return p?{r:p[0],c:p[1],inc:1}:null;
+  case '}':p=this.para(r,1,n);return {r:p[0],c:p[1],inc:p[2]==='end'?1:0};
+  case '{':p=this.para(r,-1,n);return {r:p[0],c:p[1]};
+  case 'n':case 'N':p=this.findPos(m==='n'?this.sdir:-this.sdir,n);return p?{r:p[0],c:p[1]}:null;
+  }
+  var fm=/^([fFtT;,])(.?)$/.exec(m);if(fm){var k=fm[1],ch=fm[2];if(k===';'||k===','){if(!this.lastF)return null;ch=this.lastF[1];var bk=this.lastF[0];k=k===';'?bk:({f:'F',F:'f',t:'T',T:'t'})[bk];var rep=1;}else this.lastF=[k,ch];
+    var l=L[r],pos=c;for(i=0;i<n;i++){if(k==='f'||k==='t'){var s=pos+1+((k==='t'&&(rep||i>0))?1:0);var x=l.indexOf(ch,s);if(x<0)return null;pos=x;}else{var s2=pos-1-((k==='T'&&(rep||i>0))?1:0);if(s2<0)return null;x=l.lastIndexOf(ch,s2);if(x<0)return null;pos=x;}}
+    if(k==='t')pos--;if(k==='T')pos++;return {r:r,c:pos,inc:k==='f'||k==='t'};}
+  return null;};
+/* ---------- text objects => {r1,c1,r2,c2 (inclusive), lw} ---------- */
+P.tobj=function(ai,o,n){var r=this.r,c=this.c,L=this.L,l=L[r],i;
+  if(o==='w'||o==='W'){var big=o==='W';if(!l.length)return null;var k=cls(l[c],big),s=c,e=c;while(s>0&&cls(l[s-1],big)===k)s--;while(e<l.length-1&&cls(l[e+1],big)===k)e++;
+    for(var j=1;j<n;j++){if(e+1>=l.length)break;var k2=cls(l[e+1],big);e++;while(e<l.length-1&&cls(l[e+1],big)===k2)e++;}
+    if(ai==='a'){if(k!==0){if(e+1<l.length&&cls(l[e+1],big)===0){while(e+1<l.length&&cls(l[e+1],big)===0)e++;}else{while(s>0&&cls(l[s-1],big)===0)s--;}}else{if(e+1<l.length){var k3=cls(l[e+1],big);e++;while(e<l.length-1&&cls(l[e+1],big)===k3)e++;}}}
+    return {r1:r,c1:s,r2:r,c2:e};}
+  if(o==='"'||o==="'"||o==='`'){var qs=[];for(i=0;i<l.length;i++)if(l[i]===o&&(i===0||l[i-1]!=='\\'))qs.push(i);var a=-1,b=-1;
+    for(i=0;i+1<qs.length;i+=2){if(c>=qs[i]&&c<=qs[i+1]){a=qs[i];b=qs[i+1];break;}}
+    if(a<0){for(i=0;i<qs.length-1;i++){if(qs[i]>c){a=qs[i];b=qs[i+1];break;}}}if(a<0)return null;
+    if(ai==='i')return b-a<=1?{r1:r,c1:a+1,r2:r,c2:a,empty:1}:{r1:r,c1:a+1,r2:r,c2:b-1};
+    var e2=b,s2=a;if(e2+1<l.length&&/\s/.test(l[e2+1])){while(e2+1<l.length&&/\s/.test(l[e2+1]))e2++;}else{while(s2>0&&/\s/.test(l[s2-1]))s2--;}return {r1:r,c1:s2,r2:r,c2:e2};}
+  var map={'(':'(',')':'(',b:'(','{':'{','}':'{',B:'{','[':'[',']':'[','<':'<','>':'<'};var op=map[o];
+  if(op){var cl={'(':')','{':'}','[':']','<':'>'}[op];var fnd=this.encl(op,cl,n);if(!fnd)return null;var R1=fnd[0],C1=fnd[1],R2=fnd[2],C2=fnd[3];
+    if(ai==='a')return {r1:R1,c1:C1,r2:R2,c2:C2};
+    var sr=R1,sc=C1+1,er=R2,ec=C2-1;
+    if(sc>=L[sr].length&&sr<er){sr++;sc=0;}
+    if(er>sr&&/^\s*$/.test(L[er].slice(0,C2))){er--;ec=L[er].length-1;if(sc===0&&sr<=er)return {r1:sr,c1:0,r2:er,c2:Math.max(0,L[er].length-1),lw:1};}
+    if(sr===er&&ec<sc)return {r1:sr,c1:sc,r2:er,c2:sc-1,empty:1};return {r1:sr,c1:sc,r2:er,c2:ec};}
+  if(o==='p'){if(L[r]===''&&ai==='i'){var s3=r,e3=r;while(s3>0&&L[s3-1]==='')s3--;while(e3<L.length-1&&L[e3+1]==='')e3++;return {r1:s3,c1:0,r2:e3,c2:0,lw:1};}
+    var s4=r,e4=r;while(s4>0&&L[s4-1]!=='')s4--;while(e4<L.length-1&&L[e4+1]!=='')e4++;if(ai==='a'){if(e4<L.length-1){while(e4<L.length-1&&L[e4+1]==='')e4++;}else{while(s4>0&&L[s4-1]==='')s4--;}}return {r1:s4,c1:0,r2:e4,c2:0,lw:1};}
+  return null;};
+P.encl=function(o,cl,n){var L=this.L,R=this.r,C=this.c,d=0;if(L[R][C]===cl)C--;/* search backward for unmatched open */
+  var cnt=n||1;while(true){if(C<0){R--;if(R<0)return null;C=L[R].length-1;continue;}var ch=L[R][C];if(ch===cl)d++;else if(ch===o){if(d===0){cnt--;if(!cnt)break;}else d--;}C--;}
+  var R1=R,C1=C;d=0;R=R1;C=C1;while(true){C++;if(C>=L[R].length){R++;C=-1;if(R>=L.length)return null;continue;}var ch2=L[R][C];if(ch2===o)d++;else if(ch2===cl){if(d===0)break;d--;}}
+  return [R1,C1,R,C];};
+/* ---------- applying operators ---------- */
+P.getRange=function(a){var L=this.L;if(a.lw){return L.slice(a.r1,a.r2+1).join('\n');}if(a.r1===a.r2)return L[a.r1].slice(a.c1,a.c2+1);
+  var t=L[a.r1].slice(a.c1);for(var i=a.r1+1;i<a.r2;i++)t+='\n'+L[i];return t+'\n'+L[a.r2].slice(0,a.c2+1);};
+P.delRange=function(a){var L=this.L;if(a.lw){L.splice(a.r1,a.r2-a.r1+1);if(!L.length)L.push('');return;}
+  var head=L[a.r1].slice(0,a.c1),tail=L[a.r2].slice(a.c2+1);L.splice(a.r1,a.r2-a.r1+1,head+tail);};
+P.mapRange=function(a,f){var L=this.L;for(var i=a.r1;i<=a.r2;i++){var l=L[i],s=a.lw||i>a.r1?0:a.c1,e=a.lw||i<a.r2?l.length:a.c2+1;L[i]=l.slice(0,s)+f(l.slice(s,e))+l.slice(e);}};
+function tog(s){return s.replace(/[a-zA-Z]/g,function(x){return x===x.toUpperCase()?x.toLowerCase():x.toUpperCase();});}
+P.setReg=function(t,line,rn){var v={t:t,line:!!line};this.reg=v;if(rn&&rn!=='"'){if(/[A-Z]/.test(rn)){var o=this.regs[rn.toLowerCase()]||{t:'',line:line};v={t:o.t+(o.line||line?'\n':'')+t,line:o.line||line};this.regs[rn.toLowerCase()]=v;this.reg=v;}else this.regs[rn]=v;}};
+P.applyOp=function(op,a,rn){var L=this.L;
+  if(a.empty){if(op==='c'){this.r=a.r1;this.c=a.c1;this.startIns();}return;}
+  var txt=this.getRange(a);
+  if(op==='y'){this.setReg(txt,a.lw,rn);this.r=a.r1;this.c=a.lw?(a.keepc!=null?a.keepc:this.c):a.c1;if(a.lw&&a.r1!==this.r0)this.c=this.c;var nl=a.r2-a.r1+1;if(a.lw&&nl>2)this.msg=nl+' lines yanked';this.clamp();return;}
+  this.snap();
+  if(op==='d'){this.setReg(txt,a.lw,rn);this.delRange(a);if(a.lw){this.r=Math.min(a.r1,L.length-1);this.c=this.fnb(this.r);var nd=a.r2-a.r1+1;if(nd>2)this.msg=nd+' fewer lines';}else{this.r=a.r1;this.c=a.c1;}this.clamp();this.mod();return;}
+  if(op==='c'){this.setReg(txt,a.lw,rn);if(a.lw){var ind='';L.splice(a.r1,a.r2-a.r1+1,ind);this.r=a.r1;this.c=0;}else{this.delRange(a);this.r=a.r1;this.c=a.c1;}this.startIns(true);return;}
+  if(op==='>'||op==='<'){var self=this,unit=this.et?Array(this.sw+1).join(' '):(this.sw===8?'\t':Array(this.sw+1).join(' '));
+    for(var i=a.r1;i<=a.r2;i++){if(op==='>'){if(L[i].length)L[i]=unit+L[i];}else{var m=/^(\t| {1,8})/.exec(L[i]);if(m){var rm=m[1]==='\t'?1:Math.min(m[1].length,self.sw);L[i]=L[i].slice(rm);}}}
+    this.r=a.r1;this.c=this.fnb(a.r1);var nn=a.r2-a.r1+1;if(nn>2)this.msg=nn+' lines '+op+'ed 1 time';this.mod();return;}
+  var f=op==='gu'?function(s){return s.toLowerCase();}:op==='gU'?function(s){return s.toUpperCase();}:tog;
+  this.mapRange(a,f);this.r=a.r1;this.c=a.lw?(this.c):a.c1;if(a.lw)this.c=Math.min(this.c,Math.max(0,L[this.r].length-1));this.clamp();this.mod();};
+P.motionRange=function(m,mv,op){var r=this.r,c=this.c,a;
+  if(mv.lw){a={r1:Math.min(r,mv.r),r2:Math.max(r,mv.r),c1:0,c2:0,lw:1};return a;}
+  var s=[r,c],e=[mv.r,mv.c];if(e[0]<s[0]||(e[0]===s[0]&&e[1]<s[1])){var t=s;s=e;e=t;}
+  var inc=!!mv.inc;
+  if(!inc){/* exclusive rules (:help exclusive) */
+    if(e[1]===0&&e[0]>s[0]){var fnbS=this.fnb(s[0]);if(s[1]<=fnbS){return {r1:s[0],r2:e[0]-1,c1:0,c2:0,lw:1};}
+      e=[e[0]-1,this.L[e[0]-1].length-1];inc=true;if(e[1]<0){e[1]=-1;}}
+    else{e=[e[0],e[1]-1];}}
+  if(e[1]<0&&e[0]===s[0]&&s[1]===0&&!this.L[s[0]].length)return {r1:s[0],c1:0,r2:e[0],c2:-1,empty:1};
+  if(e[0]===s[0]&&e[1]<s[1])return {r1:s[0],c1:s[1],r2:s[0],c2:s[1]-1,empty:1};
+  return {r1:s[0],c1:s[1],r2:e[0],c2:e[1]};};
+P.startIns=function(fromOp){this.mode='insert';if(!fromOp)this.snap();this.insText='';};
+/* ---------- key dispatch ---------- */
+var OPS={d:1,c:1,y:1,'>':1,'<':1};
+P.key=function(k){this.keys.push(k);this.err=false;if(this.quit)return;
+  if(this.rec&&!this.replaying)this.rec.push(k);
+  if(this.mode==='insert')return this.insKey(k);
+  if(this.mode==='replace')return this.repKey(k);
+  if(this.mode==='cmd'||this.mode==='search')return this.cmdKey(k);
+  if(k==='Escape'){this.buf=[];this.pend='';this.cntS='';this.rec=null;return;}
+  this.buf.push(k);var res=this.parse(this.buf);
+  if(res==='more'){this.pend=this.buf.join('').replace(/^\d+/,'');this.cntS=(/^\d+/.exec(this.buf.join(''))||[''])[0];return;}
+  var keys=this.buf.slice();this.buf=[];this.pend='';this.cntS='';
+  if(res==='bad')return;
+  this.exec(res,keys);};
+P.parse=function(b){var i=0,s='',cnt1='',cnt2='',rn='';
+  if(b[0]==='"'){if(b.length<2)return 'more';rn=b[1];i=2;}
+  while(i<b.length&&(/[1-9]/.test(b[i])||(cnt1&&b[i]==='0')))cnt1+=b[i++];if(i>=b.length)return 'more';
+  var k=b[i++],op=null;
+  if(k==='g'){if(i>=b.length)return 'more';k='g'+b[i++];}
+  if(k==='g~'||k==='gu'||k==='gU'||OPS[k]){op=k;
+    while(i<b.length&&(/[1-9]/.test(b[i])||(cnt2&&b[i]==='0')))cnt2+=b[i++];if(i>=b.length)return 'more';
+    var m=b[i++];
+    var n=(cnt1?+cnt1:1)*(cnt2?+cnt2:1),cnt=!!(cnt1||cnt2);
+    if(m==='g'){if(i>=b.length)return 'more';m='g'+b[i++];}
+    if(m===op||m===op.slice(-1)||(op.length===2&&m==='g'+op[1]&&false)){return {t:'line',op:op,n:n,rn:rn};}
+    if(op.length===2&&m==='g'+op[1]){return {t:'line',op:op,n:n,rn:rn};}
+    if(m==='i'||m==='a'){if(i>=b.length)return 'more';return {t:'obj',op:op,ai:m,o:b[i],n:n,rn:rn};}
+    if('fFtT'.indexOf(m)>=0){if(i>=b.length)return 'more';m=m+b[i];}
+    return {t:'opm',op:op,m:m,n:n,cnt:cnt,rn:rn};}
+  var n1=cnt1?+cnt1:1,c1=!!cnt1;
+  if('fFtTr'.indexOf(k)>=0){if(i>=b.length)return 'more';return k==='r'?{t:'cmd',k:'r',ch:b[i],n:n1}:{t:'mv',m:k+b[i],n:n1,cnt:c1};}
+  if(k==='Z'){if(i>=b.length)return 'more';return {t:'cmd',k:'Z'+b[i],n:n1};}
+  return {t:'key',k:k,n:n1,cnt:c1,rn:rn};};
+P.exec=function(a,keys){var L=this.L,self=this,mv;
+  if(a.t==='mv'||(a.t==='key'&&(mv=this.motion(a.k,a.n,a.cnt,null)))){if(!mv)mv=this.motion(a.m,a.n,a.cnt,null);if(!mv)return;
+    var keepCol=mv.keep;this.r=mv.r;if(mv.fnb)this.c=this.fnb(mv.r);else if(keepCol)this.c=this.curswant;else this.c=mv.c;this.clamp();if(!keepCol)this.curswant=mv.dollar?1e9:this.c;if(mv.dollar)this.c=Math.max(0,L[this.r].length-1);return;}
+  var isChange=false;
+  if(a.t==='line'){var n=Math.min(a.n,L.length-this.r);if(a.n>L.length-this.r&&a.op!=='y'&&a.op!=='d'&&a.op!=='c'){}
+    if(a.n>L.length-this.r&&(a.op==='d'||a.op==='c'||a.op==='y'))n=L.length-this.r;
+    var keepc=this.c;this.applyOp(a.op,{r1:this.r,r2:this.r+n-1,c1:0,c2:0,lw:1,keepc:keepc},a.rn);isChange=a.op!=='y';}
+  else if(a.t==='opm'){var m=a.m,op=a.op;
+    if(op==='c'&&(m==='w'||m==='W')&&cls(L[this.r][this.c],m==='W')!==0){m=m==='w'?'e':'E';var mv2=this.motion(m,a.n,a.cnt,op);
+      /* cw on last char of a word: vim treats as ce from current char */
+      var l=L[this.r];if(this.c<l.length-1&&cls(l[this.c+1],m==='E')!==cls(l[this.c],m==='E')&&a.n===1)mv2={r:this.r,c:this.c,inc:1};else if(this.c===l.length-1)mv2={r:this.r,c:this.c,inc:1};
+      if(!mv2)return;this.applyOp(op,this.motionRange(m,mv2,op),a.rn);isChange=true;}
+    else{var mvo=this.motion(m,a.n,a.cnt,op);if(!mvo)return;var rg=this.motionRange(m,mvo,op);if(op==='y'&&!rg.lw){}this.applyOp(op,rg,a.rn);if(op==='y'&&mvo.lw&&mvo.r<this.r){}isChange=op!=='y';}}
+  else if(a.t==='obj'){var ob=this.tobj(a.ai,a.o,a.n);if(!ob)return;this.applyOp(a.op,ob,a.rn);isChange=a.op!=='y';}
+  else if(a.t==='cmd'){if(a.k==='r'){var l2=L[this.r];if(this.c+a.n>l2.length||!l2.length)return;this.snap();
+      if(a.ch==='Enter'){L[this.r]=l2.slice(0,this.c);L.splice(this.r+1,0,l2.slice(this.c+a.n));this.r++;this.c=0;}else{L[this.r]=l2.slice(0,this.c)+Array(a.n+1).join(a.ch)+l2.slice(this.c+a.n);this.c+=a.n-1;}this.mod();isChange=true;}
+    else if(a.k==='ZZ'){this.ex('x');return;}else if(a.k==='ZQ'){this.ex('q!');return;}}
+  else if(a.t==='key'){isChange=this.cmdN(a);if(isChange==='ins'){this.rec=keys.slice();return;}}
+  if(isChange&&!this.replaying&&this.mode!=='insert'){this.dot=keys.slice();}
+  if(this.mode==='insert'&&!this.replaying){this.rec=keys.slice();}};
+P.cmdN=function(a){var L=this.L,k=a.k,n=a.n,l=L[this.r],self=this,i;
+  var alias={x:'dl',X:'dh',D:'d$',C:'c$',s:'cl',S:'cc',Y:'yy'};
+  if(alias[k]){if((k==='x'||k==='s')&&!l.length){if(k==='s'){this.snap();this.startIns(true);return 'ins';}return false;}if(k==='X'&&this.c===0)return false;
+    var seq=(a.rn?['"',a.rn]:[]).concat((n>1?String(n).split(''):[])).concat(alias[k].split(''));var r=this.parse(seq);if(r==='more'||r==='bad')return false;
+    if(k==='D'||k==='C'){r={t:'opm',op:alias[k][0],m:'$',n:n,cnt:n>1,rn:a.rn};}
+    var wasRep=this.replaying;this.replaying=true;this.exec(r,seq);this.replaying=wasRep;return this.mode==='insert'?'ins':true;}
+  switch(k){
+  case 'i':this.startIns();return 'ins';
+  case 'a':this.startIns();if(l.length)this.c++;return 'ins';
+  case 'I':this.startIns();this.c=/\S/.exec(l)?/\S/.exec(l).index:l.length;return 'ins';
+  case 'A':this.startIns();this.c=l.length;return 'ins';
+  case 'o':this.snap();L.splice(this.r+1,0,'');this.r++;this.c=0;this.mode='insert';return 'ins';
+  case 'O':this.snap();L.splice(this.r,0,'');this.c=0;this.mode='insert';return 'ins';
+  case 'R':this.snap();this.mode='replace';this.repOrig=l;return 'ins';
+  case '~':if(!l.length)return false;this.snap();var e=Math.min(l.length,this.c+n);L[this.r]=l.slice(0,this.c)+tog(l.slice(this.c,e))+l.slice(e);this.c=Math.min(e,l.length-1);this.mod();return true;
+  case 'J':case 'gJ':var cnt=Math.max(2,n);if(this.r>=L.length-1)return false;this.snap();for(i=1;i<cnt&&this.r<L.length-1;i++){var cur=L[this.r],nx=L[this.r+1];
+      if(k==='J'){cur=cur.replace(/\s+$/,'');nx=nx.replace(/^\s+/,'');var sep=(!nx||!cur||nx[0]===')')?'':' ';this.c=cur.length+(sep?0:0);if(!cur.length)this.c=0;L[this.r]=cur+sep+nx;this.c=cur.length+(sep?0:-1);if(this.c<0)this.c=0;}
+      else{this.c=cur.length;L[this.r]=cur+nx;}L.splice(this.r+1,1);}this.clamp();this.mod();return true;
+  case 'p':case 'P':var R=a.rn&&a.rn!=='"'?(this.regs[a.rn.toLowerCase()]||{t:'',line:false}):this.reg;if(!R.t&&!R.line)return false;this.snap();
+    if(R.line){var ls=R.t.split('\n'),all=[];for(i=0;i<n;i++)all=all.concat(ls);var at=k==='p'?this.r+1:this.r;L.splice.apply(L,[at,0].concat(all));this.r=at;this.c=this.fnb(at);}
+    else{var t=Array(n+1).join(R.t),pos=k==='p'&&l.length?this.c+1:this.c;var parts=t.split('\n');if(parts.length===1){L[this.r]=l.slice(0,pos)+t+l.slice(pos);this.c=pos+t.length-1;}
+      else{var head=l.slice(0,pos),tail=l.slice(pos);var nl=[head+parts[0]].concat(parts.slice(1,-1)).concat([parts[parts.length-1]+tail]);L.splice.apply(L,[this.r,1].concat(nl));this.c=pos;}}
+    this.clamp();this.mod();return true;
+  case 'u':if(!this.undo.length){this.msg='Already at oldest change';return false;}this.redo.push({L:L.slice(),r:this.r,c:this.c});var u=this.undo.pop();this.L=u.L;this.r=u.r;this.c=u.c;this.clamp();this.msg='1 change; before #'+(this.undo.length+1);this.mod();return false;
+  case 'Ctrl-r':if(!this.redo.length){this.msg='Already at newest change';return false;}var rd=this.redo.pop();this.undo.push({L:L.slice(),r:this.r,c:this.c});this.L=rd.L;this.r=rd.r;this.c=rd.c;this.clamp();this.mod();return false;
+  case '.':if(!this.dot)return false;var ks=this.dot.slice();if(a.cnt){var j=0;var pre=[];if(ks[0]==='"'){pre=ks.slice(0,2);ks=ks.slice(2);}while(/\d/.test(ks[j])&&!(j===0&&ks[j]==='0'))j++;ks=pre.concat(String(n).split('')).concat(ks.slice(j));}
+    this.replaying=true;var save=this.dot;for(i=0;i<ks.length;i++)this.key(ks[i]);this.keys.splice(this.keys.length-ks.length,ks.length);this.replaying=false;this.dot=a.cnt?ks:save;return false;
+  case ':':this.mode='cmd';this.cmd='';return false;
+  case '/':case '?':this.mode='search';this.sdirNew=k==='/'?1:-1;this.cmd='';return false;
+  case '*':case '#':var ob=this.tobj('i','w',1);if(!ob)return false;var w=l.slice(ob.c1,ob.c2+1);this.search='\\<'+w+'\\>';this.sdir=k==='*'?1:-1;var p=this.findPos(1,1);if(p){this.r=p[0];this.c=p[1];}return false;
+  }
+  return false;};
+P.insKey=function(k){var L=this.L;
+  if(k==='Escape'){this.mode='normal';this.c=Math.max(0,this.c-1);this.clamp();this.mod();if(this.rec&&!this.replaying){this.dot=this.rec.slice();this.rec=null;}this.curswant=this.c;return;}
+  if(k==='Backspace'){if(this.c>0){L[this.r]=L[this.r].slice(0,this.c-1)+L[this.r].slice(this.c);this.c--;}else if(this.r>0){var pl=L[this.r-1].length;L[this.r-1]+=L[this.r];L.splice(this.r,1);this.r--;this.c=pl;}return;}
+  if(k==='Enter'){var rest=L[this.r].slice(this.c);L[this.r]=L[this.r].slice(0,this.c);L.splice(this.r+1,0,rest);this.r++;this.c=0;return;}
+  if(k==='Ctrl-w'){var b=L[this.r].slice(0,this.c),m=/(\w+|[^\w\s]+)?\s*$/.exec(b);var cut=m?m[0].length:0;if(!cut&&this.c)cut=1;L[this.r]=b.slice(0,b.length-cut)+L[this.r].slice(this.c);this.c-=cut;return;}
+  if(k==='Tab')k='\t';if(k.length===1){L[this.r]=L[this.r].slice(0,this.c)+k+L[this.r].slice(this.c);this.c++;}};
+P.repKey=function(k){var L=this.L,l=L[this.r];if(k==='Escape'){this.mode='normal';this.c=Math.max(0,this.c-1);this.clamp();this.mod();if(this.rec&&!this.replaying){this.dot=this.rec.slice();this.rec=null;}return;}
+  if(k==='Backspace'){if(this.c>0){this.c--;var o=this.repOrig[this.c];L[this.r]=l.slice(0,this.c)+(o==null?'':o)+l.slice(this.c+1);if(o==null)L[this.r]=L[this.r].slice(0,this.c);}return;}
+  if(k.length===1){L[this.r]=l.slice(0,this.c)+k+l.slice(this.c+1);this.c++;}};
+P.cmdKey=function(k){if(k==='Escape'){this.mode='normal';this.cmd='';return;}if(k==='Backspace'){if(!this.cmd){this.mode='normal';return;}this.cmd=this.cmd.slice(0,-1);return;}
+  if(k==='Enter'){var c=this.cmd;this.cmd='';var wasS=this.mode==='search';this.mode='normal';if(wasS){if(c)this.search=c;this.sdir=this.sdirNew||1;var p=this.findPos(this.sdir,1);if(p){this.r=p[0];this.c=p[1];}}else this.ex(c);return;}
+  if(k.length===1)this.cmd+=k;};
+/* vim "magic" regex => JS */
+function vre(p){var o='',i=0;while(i<p.length){var ch=p[i];if(ch==='\\'&&i+1<p.length){var n=p[i+1];i+=2;
+    if(n==='<'||n==='>'){o+='\\b';continue;}if('(){}|+?='.indexOf(n)>=0){o+=n==='='?'?':n;continue;}if(n==='s'||n==='S'||n==='d'||n==='D'||n==='w'||n==='W'||n==='.'||n==='/'||n==='\\'||n==='['||n===']'||n==='*'||n==='^'||n==='$'||n==='n'||n==='t'){o+='\\'+n;continue;}o+=n;continue;}
+  if('(){}|+?'.indexOf(ch)>=0){o+='\\'+ch;i++;continue;}o+=ch;i++;}return o;}
+P.findPos=function(dir,n){if(!this.search)return null;var re;try{re=new RegExp(vre(this.search),'g');}catch(e){this.msg='E486: Pattern not found: '+this.search;this.err=true;return null;}
+  var L=this.L,r=this.r,c=this.c,N=L.length,res=null;
+  for(var t=0;t<n;t++){res=null;for(var i=0;i<=N;i++){var R=(r+dir*i+N*2)%N,line=L[R],m,hits=[];re.lastIndex=0;while((m=re.exec(line))){hits.push(m.index);if(m[0]==='')re.lastIndex++;}
+      if(dir>0){for(var j=0;j<hits.length;j++){if(i===0&&hits[j]<=c)continue;if(i===N&&hits[j]>c)continue;res=[R,hits[j]];break;}}
+      else{for(j=hits.length-1;j>=0;j--){if(i===0&&hits[j]>=c)continue;res=[R,hits[j]];break;}}
+      if(res){if((dir>0&&R<r)||(dir<0&&R>r))this.msg='search hit '+(dir>0?'BOTTOM, continuing at TOP':'TOP, continuing at BOTTOM');break;}}
+    if(!res){this.msg='E486: Pattern not found: '+this.search;this.err=true;return null;}r=res[0];c=res[1];}
+  return res;};
+P.range=function(s){var L=this.L,self=this;function ad(x){if(x==='.')return self.r;if(x==='$')return L.length-1;if(/^\d+$/.test(x))return Math.max(0,Math.min(L.length,+x)-1);var m=/^([.$]|\d+)?([+-]\d+)$/.exec(x);if(m){return Math.max(0,Math.min(L.length-1,ad(m[1]||'.')+(+m[2])));}return null;}
+  if(s==='%')return [0,L.length-1];if(!s)return null;var p=s.split(',');if(p.length===1){var a=ad(p[0]);return a==null?null:[a,a];}var x=ad(p[0]),y=ad(p[1]);if(x==null||y==null)return null;return x<=y?[x,y]:[y,x];};
+P.ex=function(cmd){var m,L=this.L,self=this;this.msg='';cmd=cmd.trim();
+  if(cmd==='w'){this.saved=this.text();this.wrote=true;this.msg='"file" '+L.length+'L, '+this.text().length+'B written';return;}
+  if(cmd==='q'){if(this.text()!==this.saved){this.msg='E37: No write since last change (add ! to override)';this.err=true;return;}this.quit=true;this.msg='(خرجت من vim)';return;}
+  if(cmd==='q!'){this.quit=true;this.forced=true;this.msg='(خرجت من غير حفظ — التعديلات اتلغت)';this.L=this.saved.split('\n');return;}
+  if(cmd==='wq'||cmd==='x'||cmd==='wq!'||cmd==='x!'){this.saved=this.text();this.wrote=true;this.quit=true;this.msg='"file" written — وخرجت ✓';return;}
+  if(/^\d+$/.test(cmd)||cmd==='$'){this.r=cmd==='$'?L.length-1:Math.min(L.length,+cmd)-1;this.c=this.fnb(this.r);this.clamp();return;}
+  if((m=/^set\s+(.*)$/.exec(cmd))){m[1].split(/\s+/).forEach(function(o){var q;if(o==='nu'||o==='number')self.nu=true;else if(o==='nonu'||o==='nonumber')self.nu=false;else if(o==='et'||o==='expandtab')self.et=true;else if(o==='noet')self.et=false;else if((q=/^(?:sw|shiftwidth)=(\d+)$/.exec(o)))self.sw=+q[1];else if(o==='hls'||o==='nohls'||o==='ic'||o==='noic'||o==='list'||o==='nolist'){}else{self.msg='E518: Unknown option: '+o;self.err=true;}});return;}
+  if(cmd==='noh'||cmd==='nohlsearch')return;
+  /* :[range]g/pat/cmd  :v/pat/d */
+  if((m=/^(%|[^gvsdmyt]*)?(g!?|v)\/((?:\\.|[^\/])*)\/(d|s\/.*|normal .*|norm .*)$/.exec(cmd))){var rg=this.range(m[1]||'%')||[0,L.length-1],inv=m[2]!=='g',re;try{re=new RegExp(vre(m[3]));}catch(e){this.msg='E486';this.err=true;return;}
+    this.snap();var marks=[];for(var i=rg[0];i<=rg[1];i++)if(re.test(L[i])!==inv)marks.push(L[i]);if(!marks.length){this.undo.pop();this.msg='E486: Pattern not found: '+m[3];this.err=true;return;}
+    if(m[4]==='d'){var cntd=0,out=[],lastPos=0;for(i=0;i<L.length;i++){if(i>=rg[0]&&i<=rg[1]&&(re.test(L[i])!==inv)){cntd++;lastPos=out.length;continue;}out.push(L[i]);}if(!out.length)out=[''];this.L=out;this.r=Math.min(lastPos,out.length-1);this.c=this.fnb(this.r);if(cntd>2)this.msg=cntd+' fewer lines';this.mod();return;}
+    if(m[4][0]==='s'){for(i=rg[0];i<=rg[1];i++)if(re.test(L[i])!==inv){this.r=i;this.subst(m[4].slice(1),[i,i],true);}this.mod();return;}
+    this.undo.pop();this.msg='(مدعوم هنا: :g/pat/d و :g/pat/s/…/…/)';return;}
+  if((m=/^(%|[.$\d+,\-]*)?s(\/.*)$/.exec(cmd))){var rr=this.range(m[1]||'.');if(!rr){this.msg='E16: Invalid range';this.err=true;return;}this.snap();if(!this.subst(m[2],rr)){this.undo.pop();}this.mod();return;}
+  if((m=/^(%|[.$\d+,\-]*)?(d|y|>|<|j|m\s*[.$\d]+|t\s*[.$\d]+|co\s*[.$\d]+|normal .*|norm .*)$/.exec(cmd))){var R=m[1]?this.range(m[1]):[this.r,this.r];if(!R){this.msg='E16: Invalid range';this.err=true;return;}var c2=m[2];
+    if(c2==='y'){this.setReg(L.slice(R[0],R[1]+1).join('\n'),true);return;}
+    this.snap();
+    if(c2==='d'){this.setReg(L.slice(R[0],R[1]+1).join('\n'),true);L.splice(R[0],R[1]-R[0]+1);if(!L.length)L.push('');this.r=Math.min(R[0],L.length-1);this.c=this.fnb(this.r);var nn=R[1]-R[0]+1;if(nn>2)this.msg=nn+' fewer lines';this.mod();return;}
+    if(c2==='>'||c2==='<'){this.applyOp(c2,{r1:R[0],r2:R[1],lw:1});this.undo.pop();return;}
+    if(c2==='j'){this.r=R[0];var w=this.replaying;this.replaying=true;this.cmdN({k:'J',n:Math.max(2,R[1]-R[0]+1)});this.undo.pop();this.replaying=w;return;}
+    var mm=/^(m|t|co)\s*([.$\d]+)$/.exec(c2);if(mm){var dst=mm[2]==='0'?-1:this.range(mm[2])[0],blk=L.slice(R[0],R[1]+1);
+      if(mm[1]==='m'){if(dst>=R[0]&&dst<R[1]){this.undo.pop();this.msg='E134: Cannot move a range of lines into itself';this.err=true;return;}L.splice(R[0],blk.length);if(dst>R[1])dst-=blk.length;L.splice.apply(L,[dst+1,0].concat(blk));this.r=dst+blk.length;}
+      else{L.splice.apply(L,[dst+1,0].concat(blk));this.r=dst+blk.length;}this.c=this.fnb(this.r);this.mod();return;}
+    var nm=/^norm(?:al)? (.*)$/.exec(c2);if(nm){var ks=nm[1].split('');for(var q=R[0];q<=R[1];q++){this.r=q;this.c=0;this.mode='normal';this.buf=[];var w2=this.replaying;this.replaying=true;ks.forEach(function(x){self.key(x);});if(self.mode!=='normal')self.key('Escape');this.replaying=w2;}this.keys.splice(this.keys.length-ks.length*(R[1]-R[0]+1));this.mod();return;}}
+  this.msg='E492: Not an editor command: '+cmd;this.err=true;};
+P.subst=function(spec,rr,quiet){var L=this.L,d=spec[0];if(!d)return false;var parts=[],cur='',i=1;while(i<spec.length){var ch=spec[i];if(ch==='\\'&&i+1<spec.length){cur+=spec[i+1]===d?d:ch+spec[i+1];i+=2;continue;}if(ch===d){parts.push(cur);cur='';i++;continue;}cur+=ch;i++;}parts.push(cur);
+  var pat=parts[0]||this.search,rep=parts[1]||'',fl=parts[2]||'';if(!pat){this.msg='E35: No previous regular expression';this.err=true;return false;}this.search=pat;
+  var re;try{re=new RegExp(vre(pat),(fl.indexOf('g')>=0?'g':'')+(fl.indexOf('i')>=0?'i':''));}catch(e){this.msg='E486: Pattern not found: '+pat;this.err=true;return false;}
+  var jr=rep.replace(/\\([0-9])/g,'$$$1').replace(/(^|[^\\])&/g,'$1$$&').replace(/\\&/g,'&').replace(/\\n/g,'\n').replace(/\\r/g,'\n').replace(/\\t/g,'\t').replace(/\\\//g,'/');
+  var hit=0,lines=0,last=-1;for(var r=rr[0];r<=rr[1];r++){var n0=hit;var nl=L[r].replace(re,function(){hit++;return arguments[0].replace(new RegExp('^[\\s\\S]*$'),'');});
+    if(hit>n0){L[r]=L[r].replace(re,jr);lines++;last=r;}}
+  if(!hit){if(!quiet){this.msg='E486: Pattern not found: '+pat;this.err=true;}return false;}
+  for(r=rr[1];r>=rr[0];r--){if(L[r].indexOf('\n')>=0){var sp=L[r].split('\n');L.splice.apply(L,[r,1].concat(sp));}}
+  this.r=last;this.c=this.fnb(last);if(lines>2||hit>2)this.msg=hit+' substitution'+(hit>1?'s':'')+' on '+lines+' line'+(lines>1?'s':'');return true;};
+G.ELVim2=V2;G.ELVim2.vre=vre;
+if(typeof module!=='undefined')module.exports=V2;
+})(typeof window!=='undefined'?window:global);
+
 /* mini vim engine + trainer (modes, motions, operators, :commands) */
 (function(G){'use strict';
 function cls(ch){if(ch==null||ch===' '||ch==='\t')return 0;return /\w/.test(ch)?1:2;}
@@ -8651,9 +8928,14 @@ var T=EL.VIM_TASKS=[
  {id:'x',t:'امسح حرف',d:'فيه حرف زيادة في الكلمة: kerrnel ⇒ kernel.',txt:'kerrnel',r:0,c:3,goal:'kernel',k:'x'},
  {id:'undo',t:'Undo',d:'المؤشر على السطر المهم. امسحه بـ dd «بالغلط»، وبعدين رجّعه بـ u.',txt:'important=yes',r:0,c:0,ok:function(v){return v.text()==='important=yes'&&v.keys.indexOf('u')>=0&&v.keys.indexOf('d')>=0;},k:'dd ثم u'},
  {id:'sub',t:'بحث واستبدال',d:'غيّر كل 9600 لـ 115200 في الملف كله بأمر واحد.',txt:'uart0=9600\nuart1=9600\nuart2=9600',r:0,c:0,goal:'uart0=115200\nuart1=115200\nuart2=115200',k:':%s/9600/115200/g'},
+ {id:'dot',t:'كرّر بالـ . (dot)',d:'غيّر كل LOW لـ HIGH: دوّر بـ /LOW، غيّر أول واحدة بـ cw، وبعدين n و . للباقي.',txt:'gpio1=LOW gpio2=LOW gpio3=LOW',r:0,c:6,goal:'gpio1=HIGH gpio2=HIGH gpio3=HIGH',k:'/LOW Enter ثم cwHIGH Esc ثم n . n . (الـ . بيعيد آخر تعديل كامل، و n يروح للـ match الجاي)'},
+ {id:'ci',t:'Text object: ci"',d:'المؤشر في أي حتة جوه الـ quotes. غيّر المحتوى لـ /dev/ttyS1 من غير ما تتحرك لأوله.',txt:'PORT="/dev/ttyUSB0" # serial',r:0,c:10,goal:'PORT="/dev/ttyS1" # serial',k:'ci" ثم /dev/ttyS1 ثم Esc — inner quotes'},
+ {id:'cnt',t:'count + operator',d:'امسح التلات كلمات الأولانيين بأمر واحد.',txt:'old old old value=1',r:0,c:0,goal:'value=1',k:'d3w (أو 3dw — نفس النتيجة: count × motion)'},
+ {id:'gdel',t:':g — امسح كل الـ comments',d:'امسح كل سطر بيبدأ بـ #.',txt:'# header\nbaud=9600\n# note\nport=/dev/ttyS0\n#end',r:0,c:0,goal:'baud=9600\nport=/dev/ttyS0',k:':g/^#/d'},
+ {id:'dt',t:'dt — امسح لحد حرف',d:'امسح من المؤشر لحد قبل الـ ; (سيب الـ ; موجودة).',txt:'x = compute(a, b);',r:0,c:4,goal:'x = ;',k:'dt;'},
  {id:'wq',t:'عدّل واحفظ واخرج',d:'غيّر الـ hostname لـ beaglebone واحفظ واخرج.',txt:'embedded-pc',r:0,c:0,ok:function(v){return v.quit&&v.wrote&&v.saved==='beaglebone';},k:'cc (يغيّر السطر كله) ثم beaglebone ثم Esc ثم :wq — لاحظ إن cw هنا هتغير embedded بس لأن - مش جزء من الـ word'}];
 var cur=0,v=null,box,area,cap;
-function load(i){cur=i;var t=T[i];v=new Vim(t.txt,t.r,t.c);if(t.pre)t.pre.split('').forEach(function(k){v.key(k);});v.keys=[];render();}
+function load(i){cur=i;var t=T[i];v=new (window.ELVim2||Vim)(t.txt,t.r,t.c);if(t.pre)t.pre.split('').forEach(function(k){v.key(k);});v.keys=[];render();}
 function done(t){return t.ok?t.ok(v):v.text()===t.goal;}
 function render(){if(!box)return;var t=T[cur],G=EL.G;var hh='',L=v.L;
   hh+='<div class="vim-scr" dir="ltr">';L.forEach(function(line,i){var s='';for(var j=0;j<Math.max(1,line.length+(v.mode==='insert'&&i===v.r?1:0));j++){var ch=line[j]==null?' ':line[j];var isC=i===v.r&&j===v.c&&!v.quit;s+=isC?'<span class="vc '+(v.mode==='insert'?'ins':'')+'">'+esc(ch===' '?'\u00a0':ch)+'</span>':esc(ch);}hh+='<div class="vl"><span class="vn">'+(i+1)+'</span><span class="vt">'+s+'</span></div>';});
@@ -8822,6 +9104,91 @@ function sedPlay(el){el.classList.add('wbox');el.innerHTML='<h4>🧪 sed / awk p
 W.init=function(){$$('.gstep').forEach(gstep);$$('.tracer').forEach(tracer);$$('.pred').forEach(pred);var e;if((e=$('#subnetCalc')))subnet(e);if((e=$('#cronPlay')))cronPlay(e);if((e=$('#sedPlay')))sedPlay(e);};
 })();
 
+/* "think, don't memorize": command-reasoning drills (#thinkDrills) and Vim grammar lab (#vimGrammar) */
+(function(){'use strict';var EL=window.EL,$=EL.$,$$=EL.$$,esc=EL.esc,h=EL.h;var TH=EL.think={};var LAB='/home/mohamed/q';
+function once(id,n,why){if(EL.addXPOnce)EL.addXPOnce(id,n,why);}
+var LEVELS=[
+ {n:'1 · فكّ الأمر',d:'اقرا الأمر واختار معناه — من غير ما تحفظ: كل حرف option ليه منطق.',q:[
+  {k:'mcq',c:'ls -lhS /var/log',o:['long listing، أحجام human-readable، مترتب بالحجم (الأكبر الأول)','list hidden، مترتب بالـ size','long listing بالـ inodes'],a:0,e:'-l long · -h human (K/M/G) · -S sort by Size. الـ S الكابيتال = Size، والـ s الصغيرة = blocks.'},
+  {k:'mcq',c:'tar -xzvf fw.tgz -C /opt',o:['فكّ (x) أرشيف gzip (z) وانت بتعرض الأسماء (v) من الملف (f) جوه /opt (C)','اعمل أرشيف fw.tgz من /opt','اعرض محتوى الأرشيف بس'],a:0,e:'x=extract، z=gzip، v=verbose، f=file (لازم وراه اسم الأرشيف)، -C=change dir قبل الفكّ.'},
+  {k:'mcq',c:'grep -rin --include="*.c" gpio .',o:['دوّر recursive، case-insensitive، مع أرقام السطور، في ملفات .c بس','دوّر في ملف اسمه gpio','اعرض الملفات اللي مفيهاش gpio'],a:0,e:'-r recursive · -i ignore case · -n line numbers · --include يحدد الـ glob.'},
+  {k:'mcq',c:'cp -a rootfs/ /mnt/sd/',o:['نسخة archive: recursive ومحافظة على الـ permissions والـ owners والـ links والـ timestamps','copy all الملفات المخفية بس','copy + append'],a:0,e:'-a = archive = -dR --preserve=all. ده اللي بتستخدمه لما تنسخ rootfs على كارت.'},
+  {k:'mcq',c:'sort -t, -k3 -n sales.csv',o:['رتّب بالعمود التالت رقمياً والفاصل comma','رتّب أول 3 سطور','رتّب عكسي'],a:0,e:'-t delimiter · -k key (العمود) · -n numeric. من غير -n: 10 هتيجي قبل 9 (ترتيب حروف).'},
+  {k:'mcq',c:'find . -name "*.log" -mtime +7 -delete',o:['امسح ملفات .log اللي آخر تعديل ليها من أكتر من 7 أيام','امسح أول 7 ملفات log','اعرض الـ logs اللي اتعدلت النهارده'],a:0,e:'-mtime +7 = أقدم من 7 أيام (بالـ 24 ساعة). -delete آخر حاجة دايماً — لو حطيتها الأول هتمسح كل حاجة!'},
+  {k:'mcq',c:'ps -eo pid,ni,cmd --sort=-%cpu',o:['كل الـ processes، أعمدة pid و nice و الأمر، مترتبين بالـ CPU تنازلي','process واحدة بس','الـ processes بتاعتي بس بترتيب الـ pid'],a:0,e:'-e every process · -o output format (أنت بتختار الأعمدة) · --sort=- يعني تنازلي.'},
+  {k:'mcq',c:'chmod u+x,go-w deploy.sh',o:['ضيف execute للـ owner، وشيل write من الـ group والـ others','اعمل الملف 755','شيل كل الصلاحيات'],a:0,e:'الصيغة الرمزية: who(u/g/o/a) op(+/-/=) perm(r/w/x)، وتفصل بـ comma.'}]},
+ {n:'2 · خمّن الـ option',d:'لو مش فاكر — خمّن من الكلمة الإنجليزي. أغلب أدوات GNU ماشية على نفس الحروف.',q:[
+  {k:'mcq',c:'عايز cp ينسخ فولدر بكل اللي جواه',o:['-r (recursive)','-f','-d'],a:0,e:'recursive ⇒ -r أو -R في أغلب الأدوات (cp, rm, grep, chmod, chown).'},
+  {k:'mcq',c:'عايز grep يطلّع السطور اللي مفيهاش الكلمة',o:['-v (invert)','-n','-x'],a:0,e:'-v = invert match. نفس الحرف بيعني verbose في أدوات تانية — السياق بيفرق، والـ --help بيحسم.'},
+  {k:'mcq',c:'عايز الأحجام تتكتب 4.2M بدل 4404019',o:['-h (human-readable)','-H','-s'],a:0,e:'-h في ls/du/df/free = human-readable. (في أغلب الأدوات --help هو long option، و -h لوحدها human.)'},
+  {k:'mcq',c:'عايز rm يسألك قبل كل ملف',o:['-i (interactive)','-q','-a'],a:0,e:'-i interactive في rm/cp/mv. وعكسه -f force.'},
+  {k:'mcq',c:'عايز tail يفضل فاتح ويعرض السطور الجديدة',o:['-f (follow)','-n','-c'],a:0,e:'-f follow — نفس الفكرة في journalctl -f.'},
+  {k:'mcq',c:'عايز sort يرتب من الكبير للصغير',o:['-r (reverse)','-R','-u'],a:0,e:'-r reverse. خلي بالك: -R في sort = random! عشان كده دايماً --help.'},
+  {k:'mcq',c:'عايز mkdir يعمل a/b/c حتى لو a مش موجود',o:['-p (parents)','-r','-m'],a:0,e:'-p parents — ومبيشتكيش لو الفولدر موجود (مفيد في scripts).'},
+  {k:'mcq',c:'عايز أي أمر يطبع اللي بيعمله',o:['-v (verbose)','-d','-l'],a:0,e:'-v verbose في cp/mv/rm/tar/mkdir/chmod.'}]},
+ {n:'3 · ابني الأمر',d:'اكتب الأمر بنفسك — بيتصحح بإنه يتنفّذ في sandbox ويتقارن بالنتيجة الصح (مش بالحروف).',q:[
+  {k:'type',c:'اعرض الملفات في /etc اللي اسمها بينتهي بـ .conf، كل واحد في سطر (اسم بس)',ref:'ls -1 /etc/*.conf',cmp:'set',e:'الـ glob بيتفك قبل ما ls يشتغل. ls -d /etc/*.conf أو ls -1 /etc/*.conf.'},
+  {k:'type',c:'عدّ سطور الملف names.txt (الرقم بس)',setup:["printf 'a\\nb\\nc\\n' > "+LAB+'/names.txt'],ref:'wc -l < names.txt',cmp:'num',e:'wc -l < file بيطبع الرقم من غير اسم الملف.'},
+  {k:'type',c:'اطبع أول عمود (الـ username) من /etc/passwd',ref:'cut -d: -f1 /etc/passwd',cmp:'out',e:'cut -d: -f1 — أو awk -F: \'{print $1}\'.'},
+  {k:'type',c:'اطبع السطور اللي فيها ERROR (من غير case) في app.log مع رقم السطر',setup:["printf 'ok\\nerror one\\nfine\\nERROR two\\n' > "+LAB+'/app.log'],ref:'grep -in error app.log',cmp:'out',e:'-i ignore case + -n line numbers.'},
+  {k:'type',c:'غيّر كل 9600 لـ 115200 جوه config.txt نفسه (in-place)',setup:["printf 'baud=9600\\nalt=9600\\n' > "+LAB+'/config.txt'],ref:"sed -i 's/9600/115200/g' config.txt",cmp:'state',paths:[LAB+'/config.txt'],e:"sed -i 's/old/new/g' — ‏-i in-place و g لكل الـ matches في السطر."},
+  {k:'type',c:'اعمل أرشيف مضغوط gzip اسمه src.tgz للفولدر src',setup:['mkdir -p '+LAB+'/src','touch '+LAB+'/src/a.c'],ref:'tar czf src.tgz src',fn:function(A){var n=A.res(LAB+'/src.tgz').n;return !!n&&/^\x1f\x8b/.test(A.content(n));},e:'tar -czf ARCHIVE FILES — c create، z gzip، f الاسم.'}]},
+ {n:'4 · لاقي الغلط',d:'كل أمر فيه غلطة واحدة شائعة. اختار التفسير الصح.',q:[
+  {k:'mcq',c:'tar -cfz backup.tgz /etc',o:['f لازم يجي وراه اسم الأرشيف مباشرة — هنا الاسم بقى "z"','tar مبيقبلش /etc','لازم -x مش -c'],a:0,e:'الـ option اللي بياخد قيمة (f) لازم يبقى آخر حرف في المجموعة: tar -czf backup.tgz /etc.'},
+  {k:'mcq',c:'cp project/ /backup/',o:['ناقص -r — cp بيرفض ينسخ directory: "-r not specified; omitting directory"','لازم mv','الـ / الأخيرة غلط'],a:0,e:'فولدر ⇒ -r (أو -a عشان تحافظ على الـ metadata).'},
+  {k:'mcq',c:'find . -name *.c',o:['الـ *.c من غير quotes — الـ shell هيفكها قبل find لو فيه ملفات .c في الفولدر الحالي','find مبيدعمش *','لازم -type f'],a:0,e:'دايماً quote الـ pattern: find . -name "*.c". وإلا "paths must precede expression" أو نتيجة ناقصة.'},
+  {k:'mcq',c:'tail -n app.log',o:['-n محتاج رقم: tail -n 20 app.log','tail مبيقراش logs','لازم -f'],a:0,e:'الـ options اللي بتاخد قيمة (-n N، -d X، -k N) — الـ usage في --help بيقولك: -n, --lines=[+]NUM.'},
+  {k:'mcq',c:'grep -c ERROR *.log | sort',o:['مفيش غلط تقني — بس -c بيعدّ سطور مش matches (سطر فيه 2 ERROR بيتحسب 1)','grep مبيقبلش أكتر من ملف','sort لازم -n'],a:0,e:'-c = count lines. لو عايز عدد الـ matches: grep -o ERROR *.log | wc -l.'},
+  {k:'mcq',c:'kill -9 1',o:['SIGKILL لـ init/systemd — الـ kernel بيتجاهله لـ PID 1 (ولو نجح النظام هيعمل panic)','لازم kill -15','PID 1 مش موجود'],a:0,e:'PID 1 محمي من الـ signals اللي ملهاش handler. ابدأ دايماً بـ SIGTERM (15) قبل 9 مع أي process.'}]}];
+function drills(box){var lv=0;var G=EL.G;G.think=G.think||{};
+  box.innerHTML='<h4>🧠 تمارين «فكّر متحفظش» — 4 مستويات</h4><div class="td-tabs"></div><p class="td-d"></p><div class="td-q"></div>';
+  function tabs(){$('.td-tabs',box).innerHTML=LEVELS.map(function(L,i){var done=L.q.filter(function(_,j){return G.think[i+'_'+j];}).length;return '<button data-l="'+i+'" class="'+(i===lv?'on':'')+'">'+esc(L.n)+' <small>'+done+'/'+L.q.length+'</small></button>';}).join('');}
+  function render(){tabs();var L=LEVELS[lv];$('.td-d',box).textContent=L.d;var q=$('.td-q',box);q.innerHTML='';
+    L.q.forEach(function(it,j){var id=lv+'_'+j,d=h('div',{class:'td-item'+(G.think[id]?' done':'')});
+      if(it.k==='mcq'){var order=it.o.map(function(_,k){return k;});order.sort(function(a,b){return ((a*7+j*3)%5)-((b*7+j*3)%5);});
+        d.innerHTML='<div class="td-c" dir="'+(/[a-z]/.test(it.c[0])?'ltr':'rtl')+'">'+(/[a-z]/.test(it.c[0])?'<code>'+esc(it.c)+'</code>':esc(it.c))+'</div><div class="td-o">'+order.map(function(k){return '<button data-k="'+k+'">'+esc(it.o[k])+'</button>';}).join('')+'</div><div class="td-e"></div>';
+        d.querySelector('.td-o').onclick=function(e){var b=e.target.closest('button');if(!b)return;var k=+b.getAttribute('data-k');$$('button',this).forEach(function(x){x.classList.remove('good','bad');});b.classList.add(k===it.a?'good':'bad');
+          d.querySelector('.td-e').innerHTML=(k===it.a?'✅ ':'❌ ')+esc(it.e);if(k===it.a&&!G.think[id]){G.think[id]=1;d.classList.add('done');EL.addXP(5,'فكّ أمر');EL.persist&&EL.persist();tabs();}};}
+      else{d.innerHTML='<div class="td-c">'+esc(it.c)+'</div><div class="row" dir="ltr"><span class="td-p">$</span><input class="td-in" spellcheck="false" autocomplete="off"><button class="td-go">▶ نفّذ وصحّح</button><button class="td-sol">الحل</button></div><div class="td-e"></div>';
+        var inp=d.querySelector('.td-in');function go(){var r=EL.checkTyped({setup:it.setup,ref:it.ref,cmp:it.cmp,paths:it.paths,fn:it.fn?function(A){return it.fn(A);}:null},inp.value);
+          d.querySelector('.td-e').innerHTML=(r.ok?'✅ صح! ':'❌ '+(r.msg?esc(r.msg)+' ':'لسه — '))+(r.out!=null?'<pre class="qout" dir="ltr">'+esc((r.out||'(مفيش output)').split('\n').slice(0,6).join('\n'))+'</pre>':'')+(r.ok?esc(it.e):'');
+          if(r.ok&&!G.think[id]){G.think[id]=1;d.classList.add('done');EL.addXP(10,'بنيت أمر بنفسك');EL.persist&&EL.persist();tabs();}}
+        d.querySelector('.td-go').onclick=go;inp.onkeydown=function(e){if(e.key==='Enter')go();};d.querySelector('.td-sol').onclick=function(){inp.value=it.ref;d.querySelector('.td-e').textContent='💡 '+it.e;};}
+      q.appendChild(d);});
+    var all=LEVELS.every(function(L,i){return L.q.every(function(_,j){return G.think[i+'_'+j];});});if(all)once('think_all',30,'خلصت كل تمارين فكّر متحفظش');}
+  $('.td-tabs',box).onclick=function(e){var b=e.target.closest('button');if(!b)return;lv=+b.getAttribute('data-l');render();};render();}
+/* ---------- Vim grammar lab ---------- */
+var OPS=[['d','delete'],['c','change'],['y','yank (نسخ)'],['gU','UPPERCASE'],['>','indent']],MOT=[['w','لأول الكلمة الجاية'],['e','لآخر الكلمة'],['$','لآخر السطر'],['0','لأول السطر'],['iw','inner word'],['aw','a word (+المسافة)'],['i"','جوه الـ quotes'],['a"','الـ quotes نفسها كمان'],['i(','جوه القوسين'],['t,','لحد قبل ,'],['f,','لحد , (شاملة)'],['2w','كلمتين']];
+var SAMPLE='call(dev, "ttyS0 fast", 9600)',SC=11;
+var VDEC=[{c:'d2w',o:['امسح كلمتين','امسح سطرين','كرر dw مرتين في سطرين'],a:0,e:'operator d + count 2 + motion w.'},{c:'ci"',o:['غيّر اللي جوه الـ quotes (حتى لو المؤشر مش أولها)','امسح الـ quotes','ادخل insert قبل "'],a:0,e:'c + text object i" (inner quotes).'},{c:'dap',o:['امسح الـ paragraph كله مع السطر الفاضي بعده','امسح لحد حرف p','امسح الكلمة'],a:0,e:'ap = a paragraph.'},{c:'gUiw',o:['حوّل الكلمة اللي تحت المؤشر لـ capital','روح لآخر الكلمة','الغي آخر تعديل'],a:0,e:'gU operator + iw.'},{c:'yt;',o:['انسخ من المؤشر لحد قبل ;','انسخ السطر','انسخ لحد ; شاملها'],a:0,e:'t = till (قبل الحرف)، f = find (عليه).'},{c:'>}',o:['زوّد indent لحد آخر الـ paragraph','روح للـ paragraph الجاي','اقفل القوس'],a:0,e:'> operator + } motion.'},{c:':g/TODO/d',o:['امسح كل سطر فيه TODO','امسح أول TODO','استبدل TODO'],a:0,e:':g/pattern/cmd — ينفذ cmd على كل سطر بيطابق.'},{c:'.',o:['كرّر آخر تعديل','روح لآخر سطر','اعمل undo'],a:0,e:'الـ dot بيعيد آخر change كامل (operator+motion+النص).'}];
+var VCOMP=[{t:'امسح من المؤشر لآخر السطر',txt:'baud=9600 # old comment',r:0,c:10,goal:'baud=9600 ',k:'D أو d$'},{t:'غيّر الرقم اللي جوه القوسين لـ 115200',txt:'uart_init(9600);',r:0,c:11,goal:'uart_init(115200);',k:'ci(115200 Esc'},{t:'امسح أول 3 سطور',txt:'a\nb\nc\nkeep',r:0,c:0,goal:'keep',k:'3dd أو d2j'},{t:'خلّي كلمة error كلها capital',txt:'log error now',r:0,c:5,goal:'log ERROR now',k:'gUiw'},{t:'انسخ السطر الأول تحت السطر التاني',txt:'gpio=1\nend',r:0,c:0,goal:'gpio=1\nend\ngpio=1',k:'yy j p'}];
+function mkKeys(s){var out=[],i=0;while(i<s.length){if(s[i]==='<'){var j=s.indexOf('>',i);out.push({Esc:'Escape',CR:'Enter'}[s.slice(i+1,j)]||s.slice(i+1,j));i=j+1;}else out.push(s[i++]);}return out;}
+function vrow(v){return v.L.map(function(line,i){var s='';for(var j=0;j<Math.max(1,line.length+(v.mode==='insert'&&i===v.r?1:0));j++){var ch=line[j]==null?' ':line[j];s+=(i===v.r&&j===v.c)?'<span class="vc'+(v.mode==='insert'?' ins':'')+'">'+esc(ch===' '?'\u00a0':ch)+'</span>':esc(ch);}return '<div class="vl"><span class="vt">'+s+'</span></div>';}).join('');}
+function vimLab(box){var V=window.ELVim2;if(!V){box.textContent='';return;}var G=EL.G;G.vg=G.vg||{};
+  box.innerHTML='<h4>✍️ معمل نحو vim — operator × motion</h4><div class="vg-tabs"><button data-t="m" class="on">🔬 المصفوفة الحية</button><button data-t="d">🧩 فكّ الأمر</button><button data-t="c">⌨️ ألّف الأمر</button></div><div class="vg-body"></div>';
+  var body=$('.vg-body',box),tab='m';
+  function matrix(){var op=0,mo=0;body.innerHTML='<p>اختار operator وmotion — الأمر بيتنفّذ بمحرك vim الحقيقي (متختبر قدام Vim 9.1) على السطر ده والمؤشر على <b>t</b> بتاعة ttyS0.</p><div class="vg-ops"></div><div class="vg-mots"></div><div class="vg-res" dir="ltr"></div>';
+    function draw(){$('.vg-ops',body).innerHTML='<b>operator:</b> '+OPS.map(function(o,i){return '<button data-o="'+i+'" class="'+(i===op?'on':'')+'"><code>'+esc(o[0])+'</code> '+esc(o[1])+'</button>';}).join('');
+      $('.vg-mots',body).innerHTML='<b>motion / text object:</b> '+MOT.map(function(m,i){return '<button data-m="'+i+'" class="'+(i===mo?'on':'')+'"><code>'+esc(m[0])+'</code> '+esc(m[1])+'</button>';}).join('');
+      var keys=OPS[op][0]+MOT[mo][0],before=new V(SAMPLE,0,SC),v=new V(SAMPLE,0,SC);mkKeys(keys+(OPS[op][0]==='c'?'X<Esc>':'')).forEach(function(k){v.key(k);});
+      var reg=v.regs&&v.regs['"']?v.regs['"']:(v.reg||{});var rt=reg.t!=null?reg.t:(reg.text||'');
+      $('.vg-res',body).innerHTML='<div class="vg-k">'+esc(keys)+(OPS[op][0]==='c'?'<small> X Esc</small>':'')+'</div><div class="vg-ba"><div><small>قبل</small><div class="vim-scr mini">'+vrow(before)+'</div></div><div><small>بعد</small><div class="vim-scr mini">'+vrow(v)+'</div></div></div><div class="vg-reg">register <code>""</code> = <code>'+esc(JSON.stringify(rt))+'</code></div>';once('vg_matrix',5,'جرّبت مصفوفة vim');}
+    body.onclick=function(e){var b=e.target.closest('button');if(!b)return;if(b.hasAttribute('data-o'))op=+b.getAttribute('data-o');if(b.hasAttribute('data-m'))mo=+b.getAttribute('data-m');draw();};draw();}
+  function decode(){body.innerHTML=VDEC.map(function(q,j){return '<div class="td-item'+(G.vg['d'+j]?' done':'')+'" data-j="'+j+'"><div class="td-c" dir="ltr"><code>'+esc(q.c)+'</code></div><div class="td-o">'+q.o.map(function(o,k){return '<button data-k="'+k+'">'+esc(o)+'</button>';}).join('')+'</div><div class="td-e"></div></div>';}).join('');
+    body.onclick=function(e){var b=e.target.closest('.td-o button');if(!b)return;var it=b.closest('.td-item'),j=+it.getAttribute('data-j'),k=+b.getAttribute('data-k'),q=VDEC[j];$$('button',b.parentNode).forEach(function(x){x.classList.remove('good','bad');});b.classList.add(k===q.a?'good':'bad');$('.td-e',it).innerHTML=(k===q.a?'✅ ':'❌ ')+esc(q.e);if(k===q.a&&!G.vg['d'+j]){G.vg['d'+j]=1;it.classList.add('done');EL.addXP(5,'فكّ أمر vim');EL.persist&&EL.persist();}};}
+  function compose(){var j=0,v;body.innerHTML='<div class="vg-list"></div><div class="vg-task"></div><div class="vim-scr vg-ed" tabindex="0" dir="ltr"></div><div class="row"><button class="vg-reset">⟲ Reset</button><span class="readout vg-keys" dir="ltr"></span></div><div class="td-e"></div>';
+    function load(i){j=i;var t=VCOMP[j];v=new V(t.txt,t.r,t.c);draw();}
+    function draw(){var t=VCOMP[j];$('.vg-list',body).innerHTML=VCOMP.map(function(x,i){return '<button data-i="'+i+'" class="'+(i===j?'on ':'')+(G.vg['c'+i]?'done':'')+'">'+(i+1)+'</button>';}).join('');
+      $('.vg-task',body).innerHTML='<b>'+esc(t.t)+'</b><pre class="vgoal" dir="ltr">الهدف: '+esc(t.goal)+'</pre><details><summary>💡 تلميح</summary><code dir="ltr">'+esc(t.k)+'</code></details>';
+      $('.vg-ed',body).innerHTML=vrow(v)+'<div class="vstat"><span>'+(v.mode==='insert'?'-- INSERT --':v.mode==='cmd'?':'+esc(v.cmd):'')+'</span><span>'+esc((v.cntS||'')+(v.pend||''))+'</span></div>';
+      $('.vg-keys',body).textContent=(v.keys||[]).join('').slice(-30);
+      if(v.text()===t.goal){$('.td-e',body).innerHTML='✅ برافو! '+(j<VCOMP.length-1?'اضغط الرقم الجاي.':'خلصت الكل 🎉');if(!G.vg['c'+j]){G.vg['c'+j]=1;EL.addXP(10,'ألّفت أمر vim');EL.persist&&EL.persist();draw();}}else $('.td-e',body).innerHTML='<span class="muted">اضغط على الـ editor واكتب بأوامر vim (Esc للـ normal mode).</span>';}
+    var ed=$('.vg-ed',body);ed.onkeydown=function(e){var k=e.key;if(e.ctrlKey&&k==='r')k='Ctrl-r';else if(e.ctrlKey&&k==='[')k='Escape';else if(k.length!==1&&['Escape','Enter','Backspace','Tab'].indexOf(k)<0)return;e.preventDefault();v.key(k);draw();};
+    $('.vg-list',body).onclick=function(e){var b=e.target.closest('button');if(b){load(+b.getAttribute('data-i'));ed.focus();}};$('.vg-reset',body).onclick=function(){load(j);ed.focus();};load(0);}
+  $('.vg-tabs',box).onclick=function(e){var b=e.target.closest('button');if(!b)return;tab=b.getAttribute('data-t');$$('button',this).forEach(function(x){x.classList.toggle('on',x===b);});(tab==='m'?matrix:tab==='d'?decode:compose)();};matrix();}
+TH.levels=LEVELS;TH.vcomp=VCOMP;
+TH.init=function(){var a=$('#thinkDrills');if(a)drills(a);var b=$('#vimGrammar');if(b)vimLab(b);};
+})();
 
 /* final boss challenge: timed mixed exam with score report */
 (function(){'use strict';var EL=window.EL,$=EL.$,$$=EL.$$,esc=EL.esc,h=EL.h;
