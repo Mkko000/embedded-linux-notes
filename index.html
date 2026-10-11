@@ -6379,6 +6379,8 @@ P.lex=function(line){var T=[],i=0,w=null,L=line.length,self=this;
     if(c===' '||c==='\t'){push();i++;continue;}
     if(c==='#'&&!w)break;
     if(c==='\\'){if(i+1<L)add(line[i+1],1);i+=2;continue;}
+    if(c==='$'&&line[i+1]==="'"){var k0=i+2,sb='';while(k0<L&&line[k0]!=="'"){var cc=line[k0];if(cc==='\\'&&k0+1<L){var nx=line[k0+1];var mp={n:'\n',t:'\t',r:'\r',a:'\x07',b:'\b',e:'\x1b',E:'\x1b',v:'\x0b',f:'\f','\\':'\\',"'":"'",'"':'"','0':'\0'};if(nx==='x'){var hx=/^[0-9a-fA-F]{1,2}/.exec(line.slice(k0+2));if(hx){sb+=String.fromCharCode(parseInt(hx[0],16));k0+=2+hx[0].length;continue;}}if(mp[nx]!=null){sb+=mp[nx];k0+=2;continue;}sb+='\\'+nx;k0+=2;continue;}sb+=cc;k0++;}
+      if(k0>=L)throw {syn:"unexpected EOF while looking for matching `''"};if(!w)w=[];for(var k1=0;k1<sb.length;k1++)add(sb[k1],1);if(!sb.length)w.push({c:'',q:1});i=k0+1;continue;}
     if(c==="'"){var j=line.indexOf("'",i+1);if(j<0)throw {syn:"unexpected EOF while looking for matching `''"};if(!w)w=[];for(var k=i+1;k<j;k++)add(line[k],1);if(j===i+1)w.push({c:'',q:1});i=j+1;continue;}
     if(c==='"'){var j2=i+1;if(!w)w=[];var st=w.length;
       while(j2<L&&line[j2]!=='"'){var cj=line[j2];
@@ -6482,7 +6484,7 @@ P.runCmd=function(cmd,stdin,W,o,lastp){var self=this,argv=[];this._substErr=[];
   (this._substErr||[]).forEach(function(l){W(l.t,1);});
   var assigns=[];while(argv.length&&/^[A-Za-z_][A-Za-z0-9_]*=/.test(argv[0]))assigns.push(argv.shift());
   if(!argv.length)assigns.forEach(function(a){var e=a.indexOf('=');self.cur().vars[a.slice(0,e)]=a.slice(e+1);});
-  var fd1=lastp?'tty':'pipe',fd2='tty',files=[],inp=stdin;
+  var fd1=lastp?'tty':'pipe',fd2='etty',files=[],inp=stdin;
   for(var r=0;r<cmd.r.length;r++){var R=cmd.r[r],op=R.op;
     if(/^[12]?>&[12]$/.test(op)){var from=op[0]==='>'?'1':op[0],to=op[op.length-1];if(from==='2')fd2=to==='1'?fd1:fd2;else fd1=to==='2'?fd2:fd1;continue;}
     var tg=this.expandWord(R.w);if(tg.length!==1){W('-bash: '+wtext(R.w)+': ambiguous redirect\n',1);return {rc:1,pipe:''};}tg=tg[0];
@@ -6491,7 +6493,7 @@ P.runCmd=function(cmd,stdin,W,o,lastp){var self=this,argv=[];this._substErr=[];
     var t=f.dev?'null':{f:f.abs,buf:''};if(t!=='null')files.push(t);
     if(op==='&>'||op==='&>>'){fd1=t;fd2=t;}else if(op[0]==='2')fd2=t;else fd1=t;}
   var pipeBuf='';
-  function emit(tgt,s,isErr){if(!s)return;if(tgt==='tty'){if(o.capture&&!isErr)pipeBuf+=s;else W(s,isErr);}else if(tgt==='pipe')pipeBuf+=s;else if(tgt!=='null')tgt.buf+=s;}
+  function emit(tgt,s,isErr){if(!s)return;if(tgt==='etty'){W(s,1);return;}if(tgt==='tty'){if(o.capture)pipeBuf+=s;else W(s,0);}else if(tgt==='pipe')pipeBuf+=s;else if(tgt!=='null')tgt.buf+=s;}
   var io={stdin:inp,tty:fd1==='tty'&&!o.capture,out:function(s){emit(fd1,s,0);},err:function(s){emit(fd2,s,1);}};
   var rc=0;if(argv.length){var saved=null;if(assigns.length){saved=JSON.stringify(this.cur().vars);assigns.forEach(function(a){var e=a.indexOf('=');self.cur().vars[a.slice(0,e)]=a.slice(e+1);});}
     rc=this.call(argv,io);if(saved)this.cur().vars=JSON.parse(saved);}
@@ -8022,7 +8024,8 @@ P['c_.']=P.c_source;['source','.','test','[','kill','jobs','fg','bg','wait'].for
 
 
 /* $(( )) arithmetic expansion + let */
-function arithEval(self,src){var t=[],i=0;var re=/\s*(0[xX][0-9a-fA-F]+|\d+|[A-Za-z_]\w*|\*\*=?|<<=?|>>=?|\+\+|--|[-+*\/%&|^]=|&&|\|\||[<>!=]=|[-+*\/%()<>!~&|^?:=,])/y;
+window.ELSim.U.arith=arithEval;
+function arithEval(self,src){var t=[],i=0;var re=/\s*(\d+#[0-9A-Za-z@_]+|0[xX][0-9a-fA-F]+|\d+|[A-Za-z_]\w*|\*\*=?|<<=?|>>=?|\+\+|--|[-+*\/%&|^]=|&&|\|\||[<>!=]=|[-+*\/%()<>!~&|^?:=,])/y;
   while(i<src.length){re.lastIndex=i;var m=re.exec(src);if(!m){if(/^\s*$/.test(src.slice(i)))break;throw 'syntax error: invalid arithmetic operator (error token is "'+src.slice(i).trim()+'")';}t.push(m[1]);i=re.lastIndex;}
   var p=0;function pk(){return t[p];}
   function getv(n){var v=self.getVar(n);if(v===''||v==null)return 0;if(/^-?\d+$/.test(v.trim()))return parseInt(v,10);return arithEval(self,v);}
@@ -8036,6 +8039,7 @@ function arithEval(self,src){var t=[],i=0;var re=/\s*(0[xX][0-9a-fA-F]+|\d+|[A-Z
   function pow(){var b=un();if(pk()==='**'){p++;return Math.pow(b,pow());}return b;}
   function un(){var x=pk();if(x==='-'){p++;return -un();}if(x==='+'){p++;return un();}if(x==='!'){p++;return un()?0:1;}if(x==='~'){p++;return ~un();}if(x==='++'||x==='--'){p++;var n=t[p++];return setv(n,getv(n)+(x==='++'?1:-1));}return post();}
   function post(){var x=t[p++];if(x===undefined)throw 'syntax error: operand expected (error token is "'+src+'")';if(x==='('){var v=asg();while(pk()===','){p++;v=asg();}if(t[p++]!==')')throw 'syntax error: missing )';return v;}
+    if(/^\d+#/.test(x)){var bs=+x.split('#')[0],dg=x.split('#')[1];var v0=parseInt(dg,bs);if(isNaN(v0)||bs<2||bs>36)throw 'value too great for base (error token is "'+x+'")';return v0;}
     if(/^0[xX]/.test(x))return parseInt(x,16);if(/^0\d+$/.test(x))return parseInt(x,8);if(/^\d+$/.test(x))return parseInt(x,10);
     if(/^[A-Za-z_]/.test(x)){if(pk()==='++'||pk()==='--'){var o=t[p++],old=getv(x);setv(x,old+(o==='++'?1:-1));return old;}return getv(x);}throw 'syntax error: operand expected (error token is "'+x+'")';}
   if(!t.length)return 0;var v=asg();while(pk()===','){p++;v=asg();}if(p<t.length)throw 'syntax error in expression (error token is "'+t.slice(p).join(' ')+'")';return v;}
@@ -8235,6 +8239,540 @@ c_pstree:function(a,io){var L=U.procs(this),pp=a.some(function(x){return /^-\w*p
 });})();
 window.ELSim&&window.ELSim.addCmds(['pstree'],{pstree:'display a tree of processes'},{pstree:'pstree [-p] [-u] [PID|USER]'});
 
+/* mini bash interpreter on top of ELSim: if/elif/else, for (list & C-style), while/until, case, select,
+   functions (local/return), arrays, ${...} operators, positional params, [[ ]], (( )), subshells, groups,
+   here-strings/here-docs, read, shift, set -x/-e, trap EXIT, alias/unalias, scripts with args. */
+(function(){'use strict';var Sh=window.ELSim;if(!Sh)return;var P=Sh.prototype,U=Sh.U;
+var SEP='\x01',NOWORD='\x02',EMPTY='\x03';
+function inl(self,t){if(t.indexOf('$')<0&&t.indexOf('`')<0)return t;var o='',i=0;while(i<t.length){var c=t[i];if(c==='$'||c==='`'){var r=self.lexDollar(t,i);if(r){o+=String(r.val).split(SEP).join(' ').replace(/[\x02\x03]/g,'');i=r.end;continue;}}o+=c;i++;}return o;}
+function fr(self){var S=self.S;return S._fr&&S._fr.length?S._fr[S._fr.length-1]:null;}
+function sess(self){var s=self.cur();if(!s.arrs)s.arrs={};return s;}
+/* ---------- variables & arrays ---------- */
+function isArr(self,n){return Object.prototype.hasOwnProperty.call(sess(self).arrs,n);}
+function arrGet(self,n){return sess(self).arrs[n];}
+function arrKeys(a){var k=Object.keys(a.v);if(a.t==='a')k.sort(function(x,y){return x-y;});return k;}
+function arrVals(a){return arrKeys(a).map(function(k){return a.v[k];});}
+function setVar(self,n,v){var s=sess(self);if(isArr(self,n)){s.arrs[n].v[s.arrs[n].t==='A'?'0':0]=v;return;}if((s.ro||{})[n])throw {ro:n};s.vars[n]=String(v);}
+function getScalar(self,n){if(isArr(self,n)){var a=arrGet(self,n),v=a.v[0];return v==null?'':v;}return self.getVar(n);}
+P._setVar=function(n,v){setVar(this,n,v);};
+function globToRe(pat,anch){var r='',i=0;while(i<pat.length){var c=pat[i];if(c==='\\'&&i+1<pat.length){r+=pat[i+1].replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&');i+=2;continue;}
+  if(c==='*'){r+='[\\s\\S]*';i++;continue;}if(c==='?'){r+='[\\s\\S]';i++;continue;}
+  if(c==='['){var j=pat.indexOf(']',i+2);if(j>0){var cls=pat.slice(i+1,j).replace(/^!/,'^').replace(/\[:alpha:\]/g,'a-zA-Z').replace(/\[:digit:\]/g,'0-9').replace(/\[:alnum:\]/g,'a-zA-Z0-9').replace(/\[:upper:\]/g,'A-Z').replace(/\[:lower:\]/g,'a-z').replace(/\[:space:\]/g,'\\s').replace(/\\/g,'\\\\');r+='['+cls+']';i=j+1;continue;}}
+  r+=c.replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&');i++;}return anch?new RegExp('^'+r+'$'):r;}
+P._globMatch=function(pat,s){return globToRe(pat,true).test(s);};
+function matchBrace(line,i){/* i at '{' after $, returns index of matching } */var dep=0,q=null;for(var j=i;j<line.length;j++){var c=line[j];if(q){if(c===q)q=null;else if(c==='\\'&&q==='"')j++;continue;}if(c==="'"||c==='"'){q=c;continue;}if(c==='\\'){j++;continue;}if(c==='{')dep++;else if(c==='}'){dep--;if(!dep)return j;}}return -1;}
+/* expand a word-ish string (for operands inside ${...}) */
+function expStr(self,s){if(s.indexOf('$')<0&&s.indexOf('`')<0&&s.indexOf('\\')<0&&s.indexOf('"')<0&&s.indexOf("'")<0)return s;try{var T=self.lex(s);return T.filter(function(t){return t.w;}).map(function(t){return t.w.map(function(c){return c.c;}).join('');}).join(' ').split(SEP).join(' ');}catch(e){return s;}}
+function positional(self){var f=fr(self);return f?f.args:(self.S._topArgs||[]);}
+function param(self,expr){/* expr = inside of ${ } */
+  var m,args=positional(self);
+  if(expr==='#')return String(args.length);
+  if(expr==='@'||expr==='*')return {list:args.slice(),star:expr==='*'};
+  if(/^#[A-Za-z_]\w*\[[@*]\]$/.test(expr)){var n0=expr.slice(1,expr.indexOf('['));return String(isArr(self,n0)?arrKeys(arrGet(self,n0)).length:(self.getVar(n0)?1:0));}
+  if(/^#[A-Za-z_]\w*\[.+\]$/.test(expr)){var n1=expr.slice(1,expr.indexOf('['));return String(elem(self,n1,expr.slice(expr.indexOf('[')+1,-1)).length);}
+  if(/^#([A-Za-z_]\w*|\d+)$/.test(expr)){var nm=expr.slice(1);return String((/^\d+$/.test(nm)?(args[nm-1]||''):getScalar(self,nm)).length);}
+  if((m=/^!([A-Za-z_]\w*)\[[@*]\]$/.exec(expr)))return {list:isArr(self,m[1])?arrKeys(arrGet(self,m[1])):(self.getVar(m[1])?['0']:[])};
+  if((m=/^!([A-Za-z_]\w*)$/.exec(expr))){var ind=getScalar(self,m[1]);return /^\d+$/.test(ind)?(args[ind-1]||''):getScalar(self,ind);}
+  m=/^([A-Za-z_]\w*|\d+|[@*?#$!0-])(\[([^\]]*)\])?([\s\S]*)$/.exec(expr);if(!m)throw {bad:expr};
+  var name=m[1],idx=m[3],rest=m[4],val,list=null;
+  function base(){if(/^\d+$/.test(name))return name==='0'?(fr(self)?fr(self).name:'-bash'):(args[+name-1]);if(name==='@'||name==='*'){list=args.slice();return args.join(' ');}if(name==='?')return String(self.S.rc);if(name==='$')return '4242';if(name==='#')return String(args.length);
+    if(idx!=null){if(idx==='@'||idx==='*'){var a=isArr(self,name)?arrVals(arrGet(self,name)):(self.getVar(name)?[self.getVar(name)]:[]);list=a;return a.join(' ');}return elem(self,name,idx);}
+    var s=sess(self);if(isArr(self,name))return getScalar(self,name);if(Object.prototype.hasOwnProperty.call(s.vars,name))return s.vars[name];var v=self.getVar(name);return v===''&&!envHas(self,name)?undefined:v;}
+  val=base();
+  if(!rest){if(list)return {list:list,star:idx==='*'||name==='*'};if(val==null&&self.S._opts&&self.S._opts.u)throw {perr:name+': unbound variable'};return val==null?'':val;}
+  var op;
+  if((m=/^(:?)([-=+?])([\s\S]*)$/.exec(rest))){var colon=!!m[1],unset=val==null||(colon&&val==='');op=m[2];var w=m[3];
+    if(op==='-')return unset?expStr(self,w):val;
+    if(op==='='){if(unset){var nv=expStr(self,w);setVar(self,name,nv);return nv;}return val;}
+    if(op==='+')return unset?'':expStr(self,w);
+    if(op==='?'){if(unset)throw {perr:name+': '+(w?expStr(self,w):'parameter null or not set')};return val;}}
+  if(val==null)val='';
+  function each(fn){if(list)return {list:list.map(fn),star:false};return fn(val);}
+  if((m=/^:(?![-=+?])\s*([^:]+?)\s*(:\s*([^:]+?)\s*)?$/.exec(rest))){var off=U.arith(self,inl(self,m[1])),len=m[3]!=null?U.arith(self,inl(self,m[3])):null;
+    if(list){var L=list;if(off<0)off=Math.max(0,L.length+off);return {list:len==null?L.slice(off):L.slice(off,off+len)};}
+    if(off<0)off=Math.max(0,val.length+off);if(len==null)return val.slice(off);if(len<0)return val.slice(off,val.length+len);return val.substr(off,len);}
+  if((m=/^(##?|%%?)([\s\S]*)$/.exec(rest))){var o=m[1],pat=expStr(self,m[2]),re=new RegExp('^'+globToRe(pat,false)+'$');
+    return each(function(v){var k;if(o==='#'){for(k=0;k<=v.length;k++)if(re.test(v.slice(0,k)))return v.slice(k);}else if(o==='##'){for(k=v.length;k>=0;k--)if(re.test(v.slice(0,k)))return v.slice(k);}
+      else if(o==='%'){for(k=v.length;k>=0;k--)if(re.test(v.slice(k)))return v.slice(0,k);}else{for(k=0;k<=v.length;k++)if(re.test(v.slice(k)))return v.slice(0,k);}return v;});}
+  if((m=/^\/(\/|#|%)?((?:\\.|[^\/])*)(\/([\s\S]*))?$/.exec(rest))){var mode=m[1]||'',pt=expStr(self,m[2]),rp=m[4]!=null?expStr(self,m[4]):'',src=globToRe(pt,false);
+    return each(function(v){if(!pt)return v;var re2=mode==='#'?new RegExp('^(?:'+src+')'):mode==='%'?new RegExp('(?:'+src+')$'):new RegExp(src,mode==='/'?'g':'');return v.replace(re2,function(){return rp;});});}
+  if((m=/^(\^\^?|,,?)$/.exec(rest)))return each(function(v){var up=m[1][0]==='^';if(m[1].length===2)return up?v.toUpperCase():v.toLowerCase();return (up?v.charAt(0).toUpperCase():v.charAt(0).toLowerCase())+v.slice(1);});
+  throw {bad:expr};}
+function isSetVar(self,n){return Object.prototype.hasOwnProperty.call(sess(self).vars,n)||isArr(self,n)||envHas(self,n);}
+function envHas(self,n){return /^(HOME|USER|LOGNAME|PWD|OLDPWD|SHELL|HOSTNAME|PATH|UID|EUID|LANG|TERM|PS1|RANDOM|BASH_VERSION|HISTSIZE)$/.test(n);}
+function elem(self,n,idx){idx=inl(self,idx);if(!isArr(self,n)){return (idx==='0'||U.arith(self,idx)===0)?self.getVar(n):'';}var a=arrGet(self,n),k=a.t==='A'?idx:String(U.arith(self,idx));if(a.t==='a'&&+k<0){var ks=arrKeys(a);k=ks[ks.length+(+k)];}var v=a.v[k];return v==null?'':v;}
+P._param=function(e){return param(this,e);};
+function out(r,end){if(r&&typeof r==='object'&&r.list){if(r.star)return {val:r.list.join(' '),end:end};if(!r.list.length)return {val:NOWORD,end:end};return {val:r.list.map(function(x){return x===''?EMPTY:x;}).join(SEP),end:end};}return {val:r==null?'':String(r),end:end};}
+var prevLD=P.lexDollar;
+P.lexDollar=function(line,i){var n=line[i+1],self=this;if(line[i]!=='$')return prevLD.call(this,line,i);
+  if(n==='('&&line[i+2]==='('){var dep=0,j=i+1;for(;j<line.length;j++){if(line[j]==='(')dep++;else if(line[j]===')'){dep--;if(dep===0)break;}}
+    if(line[j-1]===')'){var inner=line.slice(i+3,j-1);var ex=inl(self,inner);
+      try{return {val:String(U.arith(this,ex)),end:j+1};}catch(e){this._arithErr='-bash: '+inner+': '+e+'\n';return {val:'',end:j+1};}}}
+  if(n==='{'){var e=matchBrace(line,i+1);if(e<0)return prevLD.call(this,line,i);var expr=line.slice(i+2,e);try{return out(param(this,expr),e+1);}catch(er){if(typeof er==='string'){this._arithErr='-bash: '+expr+': '+er+'\n';return {val:'',end:e+1};}if(er&&er.perr){this._paramErr='-bash: '+er.perr+'\n';return {val:'',end:e+1};}if(er&&er.bad){this._paramErr='-bash: ${'+expr+'}: bad substitution\n';return {val:'',end:e+1};}throw er;}}
+  if(n&&/[0-9]/.test(n))return out(param(this,n),i+2);
+  if(n==='#'||n==='@'||n==='*')return out(param(this,n),i+2);
+  if(n==='!')return {val:String(this.S.lastBg||''),end:i+2};
+  if(n==='-')return {val:'himBHs',end:i+2};
+  var mm=/^[A-Za-z_][A-Za-z0-9_]*/.exec(line.slice(i+1));if(mm&&isArr(this,mm[0]))return {val:getScalar(this,mm[0]),end:i+1+mm[0].length};
+  if(mm&&this.S._opts&&this.S._opts.u&&!isSetVar(this,mm[0])){this._paramErr='-bash: '+mm[0]+': unbound variable\n';return {val:'',end:i+1+mm[0].length};}
+  if(n&&/[1-9]/.test(n)&&this.S._opts&&this.S._opts.u&&positional(this).length<+n){this._paramErr='-bash: $'+n+': unbound variable\n';return {val:'',end:i+2};}
+  return prevLD.call(this,line,i);};
+/* split words on SEP (from "$@"), drop NOWORD */
+var prevEW0=P.expandWord;
+function prevEW_(w,noglob){var v=this.cur().vars;if(!Object.prototype.hasOwnProperty.call(v,'IFS')||v.IFS===' \t\n')return prevEW0.call(this,w,noglob);var IFS=v.IFS;
+  w=w.map(function(c){if(c.x&&!c.q){if(IFS.indexOf(c.c)>=0)return {c:' ',q:0,x:1};if(/[ \t\n]/.test(c.c))return {c:c.c,q:1,x:1};}return c;});return prevEW0.call(this,w,noglob);}
+var prevEW={call:function(self,w,ng){return prevEW_.call(self,w,ng);}};
+P.expandWord=function(w,noglob){var has=false;for(var i=0;i<w.length;i++)if(w[i].c===SEP||w[i].c===NOWORD||w[i].c===EMPTY){has=true;break;}if(!has)return prevEW.call(this,w,noglob);
+  var parts=[[]];w.forEach(function(c){if(c.c===SEP)parts.push([]);else if(c.c!==NOWORD)parts[parts.length-1].push(c);});
+  var self=this,res=[];parts.forEach(function(p,k){if(!p.length){return;}if(p.every(function(c){return c.c===EMPTY;})){if(p[0].q)res.push('');return;}p=p.filter(function(c){return c.c!==EMPTY;});if(!p.length)return;res.push.apply(res,prevEW.call(self,p,noglob));});return res;};
+Sh.BI={inl:inl,EMPTY:EMPTY,SEP:SEP,NOWORD:NOWORD,fr:fr,sess:sess,isArr:isArr,arrGet:arrGet,arrKeys:arrKeys,arrVals:arrVals,setVar:setVar,globToRe:globToRe,expStr:expStr};
+})();
+/* ===================== parser ===================== */
+(function(){'use strict';var Sh=window.ELSim;if(!Sh||!Sh.BI)return;var BI=Sh.BI;
+var RES={'if':1,then:1,elif:1,'else':1,fi:1,'for':1,'while':1,until:1,'do':1,done:1,'case':1,esac:1,'function':1,select:1,'{':1,'}':1,'!':1,'[[':1,'in':1};
+function SynErr(msg,line){this.syn=msg;this.line=line;}
+function Parser(src){this.s=src;this.p=0;this.line=1;this.hd=[];}
+var PP=Parser.prototype;
+PP.err=function(tok){throw new SynErr(tok==null?'syntax error: unexpected end of file':"syntax error near unexpected token `"+tok+"'",this.line);};
+PP.ch=function(o){return this.s[this.p+(o||0)];};
+PP.eof=function(){return this.p>=this.s.length;};
+PP.ws=function(){for(;;){var c=this.ch();if(c===' '||c==='\t'||c==='\r'){this.p++;continue;}if(c==='\\'&&this.ch(1)==='\n'){this.p+=2;this.line++;continue;}if(c==='#'&&(this.p===0||/[\s;&|()]/.test(this.s[this.p-1]))){while(!this.eof()&&this.ch()!=='\n')this.p++;continue;}break;}};
+PP.nl=function(){/* consume one newline and pending heredocs */this.p++;this.line++;
+  while(this.hd.length){var h=this.hd.shift(),body=[];for(;;){if(this.eof()){if(this.inter)throw new SynErr('syntax error: unexpected end of file',this.line);break;}var e=this.s.indexOf('\n',this.p);if(e<0)e=this.s.length;var ln=this.s.slice(this.p,e);this.p=Math.min(e+1,this.s.length);this.line++;var cmp=h.strip?ln.replace(/^\t+/,''):ln;if(cmp===h.delim)break;body.push(h.strip?ln.replace(/^\t+/,''):ln);}
+    h.node.hd=body.join('\n')+(body.length?'\n':'');h.node.hdq=h.quoted;}};
+PP.seps=function(allowSemi){for(;;){this.ws();var c=this.ch();if(c==='\n'){this.nl();continue;}if(allowSemi&&c===';'&&this.ch(1)!==';'){this.p++;continue;}break;}};
+/* skip a balanced construct starting at p (quote, $(...), ${...}, `...`); returns new index */
+function skipQ(s,i){var c=s[i];
+  if(c==="'"){var j=s.indexOf("'",i+1);return j<0?s.length:j+1;}
+  if(c==='"'){i++;while(i<s.length&&s[i]!=='"'){if(s[i]==='\\'){i+=2;continue;}if(s[i]==='$'&&(s[i+1]==='('||s[i+1]==='{')){i=skipQ(s,i);continue;}if(s[i]==='`'){i=skipQ(s,i);continue;}i++;}return i+1;}
+  if(c==='`'){i++;while(i<s.length&&s[i]!=='`'){if(s[i]==='\\')i++;i++;}return i+1;}
+  if(c==='$'&&s[i+1]==='('){var d=0;i++;while(i<s.length){var x=s[i];if(x==="'"||x==='"'||x==='`'){i=skipQ(s,i);continue;}if(x==='\\'){i+=2;continue;}if(x==='(')d++;else if(x===')'){d--;if(!d)return i+1;}i++;}return i;}
+  if(c==='$'&&s[i+1]==='{'){var d2=0;i++;while(i<s.length){var y=s[i];if(y==="'"||y==='"'){i=skipQ(s,i);continue;}if(y==='\\'){i+=2;continue;}if(y==='{')d2++;else if(y==='}'){d2--;if(!d2)return i+1;}i++;}return i;}
+  return i+1;}
+PP.peekWord=function(){var s=this.s,i=this.p,st=i;while(i<s.length){var c=s[i];if(/[\s;&|<>()]/.test(c))break;if(c==='\\'){i+=2;continue;}if(c==="'"||c==='"'||c==='`'||(c==='$'&&(s[i+1]==='('||s[i+1]==='{'))){i=skipQ(s,i);continue;}i++;}
+  return {w:s.slice(st,i),end:i};};
+PP.word=function(){var w=this.peekWord();this.p=w.end;return w.w;};
+PP.kw=function(){this.ws();var w=this.peekWord();if(w.w==='[['||w.w==='{'||w.w==='}'||w.w==='!')return w.w;var nx=this.s[w.end];if(RES[w.w]&&(nx==null||/[\s;&|()<>]/.test(nx)))return w.w;
+  if(this.ch()==='('&&this.ch(1)==='(')return '((';if(this.ch()==='(')return '(';return null;};
+PP.expect=function(k){this.seps(false);var w=this.kw();if(w!==k)this.err(w||(this.eof()?null:this.peekWord().w||this.ch()));this.p+=k.length;};
+PP.list=function(stops,allowEmpty){var items=[];
+  for(;;){this.seps(false);if(this.eof())break;var c=this.ch();if(c===')')break;if(c===';'&&this.ch(1)===';')break;if(c===';'&&this.ch(1)==='&')break;
+    var k=this.kw();if(k&&stops.indexOf(k)>=0){if(!items.length&&!allowEmpty)this.err(k);break;}if(k==='then'||k==='do'||k==='done'||k==='fi'||k==='else'||k==='elif'||k==='esac'||k==='}'||k==='in')this.err(k);
+    if(c===';'){this.err(';');}
+    var pl=this.pipeline();this.ws();var op=';';c=this.ch();
+    if(c==='&'&&this.ch(1)==='&'){op='&&';this.p+=2;}else if(c==='|'&&this.ch(1)==='|'){op='||';this.p+=2;}else if(c==='&'&&this.ch(1)!=='>'){op='&';this.p++;}else if(c===';'&&this.ch(1)!==';'&&this.ch(1)!=='&'){op=';';this.p++;}else if(c==='\n'){op=';';}
+    else if(!this.eof()&&c!==')'&&!(c===';')){var k2=this.kw();if(!(k2&&stops.indexOf(k2)>=0))this.err(this.peekWord().w||c);}
+    items.push({n:pl,op:op});if(op==='&&'||op==='||'){this.seps(false);if(this.eof())this.err(null);}}
+  return {t:'list',items:items};};
+PP.pipeline=function(){var neg=false;this.ws();if(this.kw()==='!'){neg=true;this.p++;}var cmds=[this.command()];
+  for(;;){this.ws();if(this.ch()==='|'&&this.ch(1)!=='|'){this.p++;if(this.ch()==='&'){this.p++;cmds[cmds.length-1].err2out=1;}this.seps(false);cmds.push(this.command());continue;}break;}
+  return {t:'pipe',cmds:cmds,neg:neg};};
+PP.redirs=function(node){var r='';for(;;){this.ws();var s=this.s,i=this.p;var hm=/^<<(-?)\s*(['"]?)([A-Za-z_0-9]+)\2/.exec(s.slice(i));if(hm&&s[i+2]!=='<'){this.p+=hm[0].length;this.hd.push({node:node,delim:hm[3],strip:!!hm[1],quoted:!!hm[2]});continue;}if(s.substr(i,3)==='<<<'){this.p+=3;this.ws();node.hs=this.word();continue;}var m=/^(\d?>>?|\d?<|&>>?|\d?>&\d)/.exec(s.slice(i));if(!m)break;this.p+=m[0].length;if(/&\d$/.test(m[0])){r+=' '+m[0];continue;}this.ws();var w=this.word();if(!w)this.err('newline');r+=' '+m[0]+' '+w;}if(r)node.redir=(node.redir||'')+r;return node;};
+PP.command=function(){this.ws();var k=this.kw(),line=this.line,st=this.p,self=this,n;
+  if(this.eof())this.err(null);
+  if(k==='if'){this.p+=2;var cl=[],els=null;var c=this.list(['then']);this.expect('then');var b=this.list(['elif','else','fi']);cl.push({c:c,b:b});
+    for(;;){this.seps(false);var w=this.kw();if(w==='elif'){this.p+=4;var c2=this.list(['then']);this.expect('then');cl.push({c:c2,b:this.list(['elif','else','fi'])});continue;}if(w==='else'){this.p+=4;els=this.list(['fi']);}break;}
+    this.expect('fi');n={t:'if',cl:cl,els:els,line:line};}
+  else if(k==='while'||k==='until'){this.p+=k.length;var cw=this.list(['do']);this.expect('do');var bw=this.list(['done']);this.expect('done');n={t:'while',until:k==='until',c:cw,b:bw,line:line};}
+  else if(k==='for'||k==='select'){this.p+=k.length;this.ws();
+    if(k==='for'&&this.ch()==='('&&this.ch(1)==='('){var e=this.s.indexOf('))',this.p);if(e<0)this.err(null);var inner=this.s.slice(this.p+2,e).split(';');this.p=e+2;if(inner.length!==3)this.err('((');this.seps(true);this.expect('do');var bc=this.list(['done']);this.expect('done');n={t:'cfor',i:inner[0],c:inner[1],s:inner[2],b:bc,line:line};}
+    else{var v=this.word();if(!/^[A-Za-z_]\w*$/.test(v))throw new SynErr("`"+v+"': not a valid identifier",line);this.ws();var words=null;this.seps(false);
+      if(this.kw()==='in'){this.p+=2;var ws='';for(;;){this.ws();var c3=this.ch();if(c3==null||c3===';'||c3==='\n')break;var ww=this.word();if(!ww)this.err(c3);ws+=' '+ww;}words=ws;}
+      this.seps(true);this.expect('do');var bf=this.list(['done']);this.expect('done');n={t:k,v:v,words:words,b:bf,line:line};}}
+  else if(k==='case'){this.p+=4;this.ws();var cwd=this.word();this.seps(false);if(this.kw()!=='in')this.err(this.peekWord().w||null);this.p+=2;var items=[];
+    for(;;){this.seps(false);if(this.eof())this.err(null);if(this.kw()==='esac'){this.p+=4;break;}if(this.ch()==='(')this.p++;var pats=[];
+      for(;;){this.ws();var pw=this.peekWord();if(!pw.w)this.err(this.ch());this.p=pw.end;pats.push(pw.w);this.ws();if(this.ch()==='|'){this.p++;continue;}if(this.ch()===')'){this.p++;break;}this.err(this.ch());}
+      var body=this.list(['esac'],true);this.seps(false);var term=';;';if(this.ch()===';'&&this.ch(1)===';'){this.p+=2;if(this.ch()==='&'){this.p++;term=';;&';}}else if(this.ch()===';'&&this.ch(1)==='&'){this.p+=2;term=';&';}
+      items.push({pats:pats,b:body,term:term});}
+    n={t:'case',w:cwd,items:items,line:line};}
+  else if(k==='function'){this.p+=8;this.ws();var fn=this.word();this.ws();if(this.ch()==='('){this.p++;this.ws();if(this.ch()!==')')this.err(this.ch());this.p++;}this.seps(false);var fb=this.command();n={t:'func',name:fn,body:fb,src:this.s.slice(st,this.p),line:line};return n;}
+  else if(k==='{'){this.p++;var gb=this.list(['}']);this.expect('}');n={t:'group',b:gb,line:line};}
+  else if(k==='(('){var d=0,i=this.p,q;for(;i<this.s.length;i++){if(this.s[i]==='(')d++;else if(this.s[i]===')'){d--;if(d===0)break;}}if(i>=this.s.length)this.err(null);n={t:'arith',e:this.s.slice(this.p+2,i-1),line:line};this.p=i+1;}
+  else if(k==='('){this.p++;var sb=this.list([]);this.seps(false);if(this.ch()!==')')this.err(this.eof()?null:this.ch());this.p++;n={t:'sub',b:sb,line:line};}
+  else if(k==='[['){this.p+=2;var st2=this.p,s=this.s,j=this.p,found=-1;while(j<s.length){var cc=s[j];if(cc==="'"||cc==='"'||cc==='`'||(cc==='$'&&(s[j+1]==='('||s[j+1]==='{'))){j=skipQ(s,j);continue;}if(cc==='\\'){j+=2;continue;}if(cc===']'&&s[j+1]===']'&&/[\s;&|)]|^$/.test(s[j+2]||'')&&/\s/.test(s[j-1])){found=j;break;}if(cc==='\n'){break;}j++;}
+    if(found<0)throw new SynErr("unexpected EOF while looking for `]]'",line);n={t:'cond',e:s.slice(st2,found),line:line};this.p=found+2;}
+  else{/* function definition name() */var pw2=this.peekWord();var after=this.s.slice(pw2.end);var fm=/^\s*\(\s*\)/.exec(after);
+    if(pw2.w&&/^[A-Za-z_][\w.:-]*$/.test(pw2.w)&&fm){this.p=pw2.end+fm[0].length;this.seps(false);var body2=this.command();return {t:'func',name:pw2.w,body:body2,src:this.s.slice(st,this.p),line:line};}
+    if(k&&RES[k]&&k!=='!')this.err(k);
+    return this.simple();}
+  return this.redirs(n);};
+PP.simple=function(){var s=this.s,i=this.p,st=i,line=this.line,raw='',node={t:'simple',line:line},hs=null;
+  var atWordStart=true,word='';
+  while(i<s.length){var c=s[i];
+    if(c==='\n'||c===';'||c===')')break;
+    if(c==='&'){if(/[<>]$/.test(raw)){raw+='&';i++;continue;}if(s[i+1]==='>'){raw+='&>';i+=2;if(s[i]==='>'){raw+='>';i++;}continue;}break;}
+    if(c==='|'){if(raw.length&&/>$/.test(raw)&&false){}break;}
+    if(c==='\\'&&s[i+1]==='\n'){i+=2;this.line++;continue;}
+    if(c==='#'&&/\s$/.test(raw)){while(i<s.length&&s[i]!=='\n')i++;break;}
+    if(c==='<'&&s[i+1]==='<'&&s[i+2]==='<'){i+=3;while(s[i]===' '||s[i]==='\t')i++;var w0=i;while(i<s.length&&!/[\s;&|<>()]/.test(s[i])){if(s[i]==="'"||s[i]==='"'||s[i]==='`'||(s[i]==='$'&&(s[i+1]==='('||s[i+1]==='{'))){i=skipQ(s,i);continue;}if(s[i]==='\\'){i+=2;continue;}i++;}hs=s.slice(w0,i);continue;}
+    if(c==='<'&&s[i+1]==='<'){i+=2;var strip=false;if(s[i]==='-'){strip=true;i++;}while(s[i]===' '||s[i]==='\t')i++;var d0=i;while(i<s.length&&!/[\s;&|<>()]/.test(s[i])){if(s[i]==="'"||s[i]==='"'){i=skipQ(s,i);continue;}i++;}var dl=s.slice(d0,i),qd=/['"\\]/.test(dl);dl=dl.replace(/['"\\]/g,'');this.hd.push({node:node,delim:dl,strip:strip,quoted:qd});continue;}
+    if(c==='('){var am=/(^|\s)([A-Za-z_]\w*(\[[^\]]*\])?\+?=)$/.exec(raw);if(am){var d=0,j=i;for(;j<s.length;j++){if(s[j]==="'"||s[j]==='"'){j=skipQ(s,j)-1;continue;}if(s[j]==='(')d++;else if(s[j]===')'){d--;if(!d)break;}if(s[j]==='\n')this.line++;}raw+=s.slice(i,j+1);i=j+1;continue;}
+      this.p=i;this.err('(');}
+    if(c==="'"||c==='"'||c==='`'||(c==='$'&&(s[i+1]==='('||s[i+1]==='{'))){var e=skipQ(s,i);var seg=s.slice(i,e);this.line+=(seg.match(/\n/g)||[]).length;raw+=seg;i=e;continue;}
+    if(c==='\\'){raw+=s.slice(i,i+2);i+=2;continue;}
+    raw+=c;i++;}
+  this.p=i;node.raw=raw.replace(/\s+$/,'');if(hs!=null)node.hs=hs;
+  if(!node.raw.trim()&&hs==null&&!this.hd.some(function(h){return h.node===node;}))this.err(this.eof()?null:s[i]);
+  return node;};
+function parse(src,inter){var p=new Parser(src);p.inter=!!inter;var L=p.list([]);p.seps(true);if(inter&&p.hd.length)throw new SynErr('syntax error: unexpected end of file',p.line);if(!p.eof()){var c=p.ch();p.err(c===')'?')':c===';'?(p.ch(1)===';'?';;':';'):p.peekWord().w||c);}if(p.hd.length)p.hd=[];return L;}
+BI.parse=parse;BI.SynErr=SynErr;BI.skipQ=skipQ;
+})();
+/* ===================== executor ===================== */
+(function(){'use strict';var Sh=window.ELSim;if(!Sh||!Sh.BI)return;var BI=Sh.BI,P=Sh.prototype,U=Sh.U,SEP=BI.SEP,NOWORD=BI.NOWORD;
+var prevExec=P.exec,prevCall=P.call;
+var MYB={local:1,declare:1,typeset:1,readonly:1,'return':1,'break':1,'continue':1,shift:1,read:1,set:1,trap:1,'eval':1,alias:1,unalias:1,mapfile:1,readarray:1,':':1,command:1,unset:1,type:1,source:1,'.':1,exit:1,getopts:1};
+function opts(self){var S=self.S;if(!S._opts)S._opts={};return S._opts;}
+function funcs(self){var S=self.S;if(!S.funcs)S.funcs={};return S.funcs;}
+function aliases(self){var S=self.S;if(!S.aliases)S.aliases={ll:'ls -l'};return S.aliases;}
+function Ctl(k,n){this.k=k;this.n=n;}
+function wtext(w){return w.map(function(c){return c.c;}).join('');}
+/* expand a raw string into words (with globbing unless noglob) */
+function words(self,raw,noglob){if(!raw||!raw.trim())return [];var T=self.lex(raw.replace(/\n/g,' '));var out=[];T.forEach(function(t){if(t.w)out.push.apply(out,self.expandWord(t.w,noglob));});return out;}
+function str1(self,raw){/* expand to a single string (no splitting, no glob) */if(raw==null)return '';var T=self.lex(raw.replace(/\n/g,' '));var parts=[];T.forEach(function(t){if(t.w)parts.push(wtext(t.w).split(SEP).join(' ').replace(new RegExp(NOWORD,'g'),''));});return parts.join(' ');}
+function patOf(self,raw){/* glob pattern string: quoted chars escaped */var T=self.lex(raw);var s='';T.forEach(function(t){if(!t.w)return;t.w.forEach(function(c){if(c.c===SEP){s+=' ';return;}if(c.c===NOWORD)return;s+=c.q&&/[*?\[\]\\]/.test(c.c)?'\\'+c.c:c.c;});});return s;}
+function reOf(self,raw){var o='',i=0,esc=function(x){return x.replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&');};while(i<raw.length){var c=raw[i];
+  if(c==='\\'){o+=esc(raw[i+1]||'');i+=2;continue;}
+  if(c==="'"){var j=raw.indexOf("'",i+1);if(j<0)j=raw.length;o+=esc(raw.slice(i+1,j));i=j+1;continue;}
+  if(c==='"'){var j2=BI.skipQ(raw,i);o+=esc(BI.inl(self,raw.slice(i+1,j2-1)));i=j2;continue;}
+  if(c==='$'){var r=self.lexDollar(raw,i);if(r){o+=String(r.val).split(SEP).join(' ');i=r.end;continue;}}
+  o+=c;i++;}return o;}
+function expandHD(self,body){var out='',i=0;while(i<body.length){var c=body[i];if(c==='\\'&&/[$`\\]/.test(body[i+1]||'')){out+=body[i+1];i+=2;continue;}if(c==='$'||c==='`'){var r=self.lexDollar(body,i);if(r){out+=String(r.val).split(SEP).join(' ').replace(new RegExp(NOWORD,'g'),'');i=r.end;continue;}}out+=c;i++;}return out;}
+function snap(self){var s=self.cur(),S=self.S;return JSON.stringify({vars:s.vars,arrs:s.arrs||{},cwd:s.cwd,old:s.old,umask:s.umask,dirs:s.dirs,ro:s.ro||{},opts:S._opts||{},funcs:S.funcs||{},aliases:S.aliases||null,traps:S._traps||{},top:S._topArgs||[]});}
+function restore(self,j){var o=JSON.parse(j),s=self.cur(),S=self.S;s.vars=o.vars;s.arrs=o.arrs;s.cwd=o.cwd;s.old=o.old;s.umask=o.umask;s.dirs=o.dirs;s.ro=o.ro;S._opts=o.opts;S.funcs=o.funcs;if(o.aliases)S.aliases=o.aliases;S._traps=o.traps;S._topArgs=o.top;}
+function Ctx(W,o){this.W=W;this.o=o||{};this.stdin=null;this.script=null;this.cond=0;this.loops=0;this.depth=0;}
+function sub(ctx,ch){var c=Object.create(ctx);for(var k in ch)c[k]=ch[k];return c;}
+function collect(ctx){var buf={s:''};var W=function(t,e){if(e)ctx.W(t,1);else buf.s+=t;};return {W:W,buf:buf};}
+function errMsg(self,ctx,t){if(ctx.script&&/^-bash: /.test(t))return ctx.script.name+': line '+(ctx.line||'?')+': '+t.slice(7);return t;}
+function E(self,ctx,t){ctx.W(errMsg(self,ctx,t),1);}
+/* ---------- lists ---------- */
+function runList(self,L,ctx){var rc=self.S.rc||0,prev=null;
+  for(var i=0;i<L.items.length;i++){var it=L.items[i];
+    if(prev==='&&'&&rc!==0||prev==='||'&&rc===0){prev=it.op;continue;}
+    var condHere=it.op==='&&'||it.op==='||';var c2=condHere?sub(ctx,{cond:ctx.cond+1}):ctx;
+    if(it.op==='&'){rc=bg(self,it.n,ctx);}else rc=runPipe(self,it.n,c2);
+    self.S.rc=rc;
+    if(rc!==0&&!condHere&&!ctx.cond&&!it.n.neg&&(prev!=='&&'&&prev!=='||')){var tr=(self.S._traps||{}).ERR;if(tr)runText(self,tr,ctx);if(opts(self).e&&ctx.script)throw new Ctl('exit',rc);}
+    prev=it.op;}
+  return rc;}
+function bg(self,pl,ctx){if(pl.cmds.length===1&&pl.cmds[0].t==='simple'&&!pl.cmds[0].hd&&pl.cmds[0].hs==null){var r=prevExec.call(self,pl.cmds[0].raw+' &',ctx.o);r.lines.forEach(function(l){ctx.W(l.t,l.e);});return 0;}return runPipe(self,pl,ctx);}
+function plainSimple(self,n){if(n.t!=='simple'||n.hd!=null||n.hs!=null)return false;var r=n.raw;if(/^\s*[A-Za-z_]\w*(\[[^\]]*\])?\+?=\(/.test(r)||/^\s*[A-Za-z_]\w*\[[^\]]*\]=/.test(r))return false;
+  var m=/^\s*(?:[A-Za-z_]\w*=\S*\s+)*([^\s;&|<>]+)/.exec(r);if(!m)return true;var w=m[1].replace(/^\\/,'');
+  if(MYB[w]||funcs(self)[w]||(self.S.aliases&&self.S.aliases[w]&&w!=='ll'))return false;if(w==='bash'||w==='sh'||w.indexOf('/')>=0)return false;return true;}
+function runPipe(self,pl,ctx){var cmds=pl.cmds,rc;
+  if(cmds.length>1&&cmds.every(function(c){return plainSimple(self,c);})&&!ctx.stdin&&!opts(self).x&&!opts(self).pipefail){var r=prevExec.call(self,cmds.map(function(c){return c.raw;}).join(' | '),ctx.o);r.lines.forEach(function(l){ctx.W(errMsg(self,ctx,l.t),l.e);});rc=r.rc;}
+  else if(cmds.length===1){rc=runNode(self,cmds[0],ctx,null,true);}
+  else{var input=null,rcs=[];for(var i=0;i<cmds.length;i++){var last=i===cmds.length-1,sj=snap(self);
+      if(last){rc=runNode(self,cmds[i],sub(ctx,{stdin:null}),input,true);rcs.push(rc);}
+      else{var cl=collect(ctx);var cx=sub(ctx,{W:cl.W,stdin:null,o:{capture:1}});if(cmds[i].err2out){cx.W=function(t){cl.buf.s+=t;};}rcs.push(runNode(self,cmds[i],cx,input,false));input=cl.buf.s;}
+      restore(self,sj);}
+    if(opts(self).pipefail){rc=0;rcs.forEach(function(x){if(x)rc=x;});}}
+  if(pl.neg)rc=rc===0?1:0;return rc;}
+/* ---------- redirections for compound commands / builtins ---------- */
+function withRedir(self,redir,ctx,input,fn){if(!redir||!redir.trim())return fn(ctx,input);
+  var T;try{T=self.lex(redir);}catch(e){E(self,ctx,'-bash: syntax error in redirection\n');return 2;}
+  var outT=null,errT=null,files=[],inp=input,cx=sub(ctx,{}),i;
+  for(i=0;i<T.length;i++){var op=T[i].op;if(!op)continue;if(/&$/.test(op)&&op!=='&>'&&T[i+1]&&T[i+1].w){op=op+BI.wtext(T[i+1].w);i++;}
+    if(/^[12]?>&[12]$/.test(op)){var from=op[0]==='>'?'1':op[0],to=op[op.length-1];if(from==='2'&&to==='1')errT=outT||'out';else if(from==='1'&&to==='2')outT=errT||'err';continue;}
+    var w=T[i+1]&&T[i+1].w;i++;if(!w){E(self,ctx,'-bash: syntax error near unexpected token `newline\'\n');return 2;}var tg=self.expandWord(w)[0];
+    if(op==='<'||op==='0<'){var rr=self.res(tg);if(!rr.n){E(self,ctx,'-bash: '+tg+': No such file or directory\n');return 1;}inp=self.content(rr.n);continue;}
+    var app=/>>/.test(op),f=self.openW(tg,app);if(f.err){E(self,ctx,'-bash: '+tg+': '+f.err+'\n');return 1;}var t=f.dev?{dev:1,buf:''}:{f:f.abs,buf:''};files.push(t);
+    if(op==='&>'||op==='&>>'){outT=t;errT=t;}else if(op[0]==='2')errT=t;else outT=t;}
+  var base=ctx.W;cx.W=function(s,e){var tgt=e?errT:outT;if(tgt==='out')tgt=null,e=0;if(tgt==='err'){tgt=null;e=1;}if(tgt){if(!tgt.dev)tgt.buf+=s;return;}base(s,e);};
+  if(errT==='out'&&outT&&outT!=='err'){var o2=outT;cx.W=function(s,e){if(o2.dev)return;o2.buf+=s;};}
+  var rc=fn(cx,inp);files.forEach(function(t){if(t.dev)return;var x=self.res(t.f);if(x.n&&x.n.t==='f')self.setContent(x.n,self.content(x.n)+t.buf);});return rc;}
+/* ---------- nodes ---------- */
+function loopGuard(ctx){if(++ctx.loopsN>20000)throw new Ctl('limit');}
+function runNode(self,n,ctx,input,lastp){ctx.line=n.line+(ctx.lineBase||0);
+  if(n.t==='simple')return BI.runSimpleImpl(self,n,ctx,input,lastp);
+  if(n.t==='func'){funcs(self)[n.name]={body:n.body,src:n.src};return 0;}
+  if(n.hs!=null)input=str1(self,n.hs)+'\n';if(n.hd!=null)input=n.hdq?n.hd:expandHD(self,n.hd);
+  return withRedir(self,n.redir,ctx,input,function(cx,inp){
+    if(inp!=null)cx=sub(cx,{stdin:{buf:inp,pos:0}});
+    switch(n.t){
+    case 'if':{for(var i=0;i<n.cl.length;i++){var c=runList(self,n.cl[i].c,sub(cx,{cond:cx.cond+1}));if(c===0)return runList(self,n.cl[i].b,cx);}return n.els?runList(self,n.els,cx):0;}
+    case 'while':{var rc=0,cnt=0;for(;;){if(++cnt>5000)throw new Ctl('limit');var c2=runList(self,n.c,sub(cx,{cond:cx.cond+1}));if(n.until?c2===0:c2!==0)break;
+        try{rc=runList(self,n.b,cx);}catch(e){if(e instanceof Ctl&&e.k==='break'){if(e.n>1){e.n--;throw e;}break;}if(e instanceof Ctl&&e.k==='continue'){if(e.n>1){e.n--;throw e;}continue;}throw e;}}return rc;}
+    case 'for':case 'select':{var list=n.words==null?posArgs(self).slice():words(self,n.words);var rc2=0;
+      if(n.t==='select')return selectLoop(self,n,list,cx);
+      for(var k=0;k<list.length;k++){BI.setVar(self,n.v,list[k]);try{rc2=runList(self,n.b,cx);}catch(e){if(e instanceof Ctl&&e.k==='break'){if(e.n>1){e.n--;throw e;}break;}if(e instanceof Ctl&&e.k==='continue'){if(e.n>1){e.n--;throw e;}continue;}throw e;}}return rc2;}
+    case 'cfor':{var rc3=0,cnt3=0;try{if(n.i.trim())U.arith(self,ax(self,n.i));}catch(e){E(self,cx,'-bash: ((: '+n.i.trim()+': '+e+'\n');return 1;}
+      for(;;){if(++cnt3>5000)throw new Ctl('limit');var ok=true;try{if(n.c.trim())ok=U.arith(self,ax(self,n.c))!==0;}catch(e){E(self,cx,'-bash: ((: '+n.c.trim()+': '+e+'\n');return 1;}if(!ok)break;
+        var brk=false;try{rc3=runList(self,n.b,cx);}catch(e){if(e instanceof Ctl&&e.k==='break'){if(e.n>1){e.n--;throw e;}brk=true;}else if(e instanceof Ctl&&e.k==='continue'){if(e.n>1){e.n--;throw e;}}else throw e;}
+        if(brk)break;try{if(n.s.trim())U.arith(self,ax(self,n.s));}catch(e){E(self,cx,'-bash: ((: '+n.s.trim()+': '+e+'\n');return 1;}}return rc3;}
+    case 'case':{var w=str1(self,n.w);for(var j=0;j<n.items.length;j++){var it=n.items[j];var hit=it.pats.some(function(p){return BI.globToRe(patOf(self,p),true).test(w);});
+        if(hit){var r=runList(self,it.b,cx);while(it.term===';&'&&j+1<n.items.length){j++;it=n.items[j];r=runList(self,it.b,cx);}if(it.term===';;&')continue;return r;}}return 0;}
+    case 'group':return runList(self,n.b,cx);
+    case 'sub':{var sj=snap(self);try{return runList(self,n.b,sub(cx,{subshell:1}));}catch(e){if(e instanceof Ctl&&e.k==='exit')return e.n;throw e;}finally{restore(self,sj);}}
+    case 'arith':{try{var v=U.arith(self,ax(self,n.e));if(opts(self).x)E(self,cx,'+ (('+n.e+'))\n');return v!==0?0:1;}catch(e){E(self,cx,'-bash: ((: '+n.e.trim()+': '+e+'\n');return 1;}}
+    case 'cond':{if(cx.script&&cx.script.posix){E(self,cx,'-bash: [[: not found\n');return 127;}try{return condEval(self,n.e)?0:1;}catch(e){if(e&&e.cerr){E(self,cx,'-bash: '+e.cerr+'\n');return 2;}throw e;}}
+    }return 0;});}
+function ax(self,e){return BI.inl(self,e);}
+function posArgs(self){var f=BI.fr(self);return f?f.args:(self.S._topArgs||[]);}
+function readLine(ctx){var st=ctx.stdin;if(!st)return null;if(st.pos>=st.buf.length)return null;var e=st.buf.indexOf('\n',st.pos);var l;if(e<0){l=st.buf.slice(st.pos);st.pos=st.buf.length;}else{l=st.buf.slice(st.pos,e);st.pos=e+1;}return l;}
+function selectLoop(self,n,list,cx){var rc=0,cnt=0;for(;;){if(++cnt>200)break;var menu=list.map(function(x,i){return (i+1)+') '+x;}).join('\n')+'\n';E(self,cx,menu);E(self,cx,(self.getVar('PS3')||'#? '));
+    var l=readLine(cx);if(l==null){E(self,cx,'\n');if(!cx.stdin)E(self,cx,'(simulator: مفيش keyboard input هنا — ابعت الاختيارات بـ pipe، مثلاً: printf "1\\n3\\n" | ./menu.sh)\n');break;}
+    BI.setVar(self,'REPLY',l);var k=parseInt(l,10);BI.setVar(self,n.v,(k>=1&&k<=list.length&&String(k)===l.trim())?list[k-1]:'');
+    try{rc=runList(self,n.b,cx);}catch(e){if(e instanceof Ctl&&e.k==='break'){if(e.n>1){e.n--;throw e;}break;}if(e instanceof Ctl&&e.k==='continue')continue;throw e;}}return rc;}
+/* ---------- [[ ]] ---------- */
+function condEval(self,src){var toks=[],i=0,s=src;
+  while(i<s.length){var c=s[i];if(/\s/.test(c)){i++;continue;}
+    if(s.substr(i,2)==='&&'||s.substr(i,2)==='||'){toks.push({op:s.substr(i,2)});i+=2;continue;}
+    if(c==='('||c===')'){toks.push({op:c});i++;continue;}
+    var st=i;if(toks.length&&toks[toks.length-1].w==='=~'){var dp=0;while(i<s.length){var cc=s[i];if(cc==='\\'){i+=2;continue;}if(cc==="'"||cc==='"'){i=BI.skipQ(s,i);continue;}if(cc==='(')dp++;else if(cc===')'){if(!dp)break;dp--;}else if(/\s/.test(cc)&&!dp)break;i++;}toks.push({w:s.slice(st,i)});continue;}
+    while(i<s.length&&!/\s/.test(s[i])&&s[i]!==')'&&s.substr(i,2)!=='&&'&&s.substr(i,2)!=='||'){if(s[i]==="'"||s[i]==='"'||s[i]==='`'||(s[i]==='$'&&(s[i+1]==='('||s[i+1]==='{'))){i=BI.skipQ(s,i);continue;}if(s[i]==='\\'){i+=2;continue;}if(s[i]==='('&&/=~$/.test(s.slice(st,i))===false&&i>st&&false){}i++;}
+    toks.push({w:s.slice(st,i)});}
+  var p=0;function pk(){return toks[p];}function isOp(t,o){return t&&t.op===o;}function isW(t,w){return t&&t.w===w;}
+  function val(t){return str1(self,t.w);}
+  function oor(){var v=oand();while(isOp(pk(),'||')){p++;var r=oand();v=v||r;}return v;}
+  function oand(){var v=onot();while(isOp(pk(),'&&')){p++;var r=onot();v=v&&r;}return v;}
+  function onot(){if(isW(pk(),'!')){p++;return !onot();}return prim();}
+  function file(path){return self.res(path);}
+  function prim(){var t=pk();if(!t)throw {cerr:"syntax error in conditional expression"};
+    if(isOp(t,'(')){p++;var v=oor();if(!isOp(pk(),')'))throw {cerr:"syntax error in conditional expression: unexpected token `"+(pk()?(pk().w||pk().op):'')+"'"};p++;return v;}
+    var nx=toks[p+1],nx2=toks[p+2];
+    if(t.w&&/^-[a-zA-Z]$/.test(t.w)&&nx&&nx.w!=null&&!(nx2&&nx2.w!=null&&/^(==?|!=|=~|<|>|-(eq|ne|lt|le|gt|ge|nt|ot|ef))$/.test(nx2.w))){p+=2;var a=val(nx),u=t.w;
+      if(u==='-z')return a==='';if(u==='-n')return a!=='';var r=file(a),n=r.n;
+      switch(u){case '-e':case '-a':return !!n;case '-f':return !!n&&n.t==='f';case '-d':return !!n&&n.t==='d';case '-s':return !!n&&self.size(n)>0;case '-r':return !!n&&self.can(n,'r');case '-w':return !!n&&self.can(n,'w');case '-x':return !!n&&self.can(n,'x');
+        case '-L':case '-h':{var r2=self.res(a,{nofollow:1});return !!(r2.n&&r2.n.t==='l');}case '-b':return false;case '-c':return !!n&&n.t==='c';case '-p':case '-S':case '-t':return false;case '-v':return a!==''&&(Object.prototype.hasOwnProperty.call(self.cur().vars,a)||BI.isArr(self,a));}
+      throw {cerr:'unexpected argument `'+u+"' to conditional unary operator"};}
+    if(nx&&nx.w!=null&&/^(==?|!=|=~|<|>|-(eq|ne|lt|le|gt|ge|nt|ot|ef))$/.test(nx.w)){if(!nx2||nx2.w==null)throw {cerr:"unexpected argument `"+(nx2?nx2.op:'')+"' to conditional binary operator"};p+=3;var L=val(t),op=nx.w;
+      if(op==='=='||op==='='||op==='!='){var m=BI.globToRe(patOf(self,nx2.w),true).test(L);return op==='!='?!m:m;}
+      if(op==='=~'){var re;try{re=new RegExp(reOf(self,nx2.w));}catch(e){return false;}var mm=re.exec(L);var s2=BI.sess(self);if(mm){s2.arrs.BASH_REMATCH={t:'a',v:{}};mm.forEach(function(x,i){s2.arrs.BASH_REMATCH.v[i]=x==null?'':x;});}else s2.arrs.BASH_REMATCH={t:'a',v:{}};return !!mm;}
+      if(op==='<')return L<val(nx2);if(op==='>')return L>val(nx2);
+      var R=val(nx2);if(op==='-nt'||op==='-ot'){var A=file(L).n,B=file(R).n;if(!A||!B)return op==='-nt'?!!A:!!B;return op==='-nt'?A.mt>B.mt:A.mt<B.mt;}if(op==='-ef'){var A2=file(L),B2=file(R);return !!A2.n&&A2.n===B2.n;}
+      var a1=U.arith(self,L||'0'),b1=U.arith(self,R||'0');return {'-eq':a1===b1,'-ne':a1!==b1,'-lt':a1<b1,'-le':a1<=b1,'-gt':a1>b1,'-ge':a1>=b1}[op];}
+    p++;return val(t)!=='';}
+  if(!toks.length)throw {cerr:'syntax error near `]]\''};var v=oor();if(p<toks.length)throw {cerr:"syntax error in conditional expression: unexpected token `"+(toks[p].w||toks[p].op)+"'"};return v;}
+BI.condEval=condEval;BI.Ctl=Ctl;BI.Ctx=Ctx;BI.runList=runList;BI.runNode=runNode;BI.withRedir=withRedir;BI.words=words;BI.str1=str1;BI.snap=snap;BI.restore=restore;BI.sub=sub;BI.collect=collect;BI.E=E;BI.errMsg=errMsg;BI.readLine=readLine;BI.opts=opts;BI.funcs=funcs;BI.aliases=aliases;BI.MYB=MYB;BI.prevExec=prevExec;BI.prevCall=prevCall;BI.expandHD=expandHD;BI.posArgs=posArgs;BI.wtext=wtext;
+function runText(self,txt,ctx){var L;try{L=BI.parse(txt);}catch(e){if(e&&e.syn){E(self,ctx,'-bash: '+e.syn+'\n');return 2;}throw e;}return runList(self,L,ctx);}
+BI.runText=runText;
+})();
+/* ===================== simple commands, builtins, scripts ===================== */
+(function(){'use strict';var Sh=window.ELSim;if(!Sh||!Sh.BI)return;var BI=Sh.BI,P=Sh.prototype,U=Sh.U,SEP=BI.SEP,NOWORD=BI.NOWORD,Ctl=BI.Ctl,sub=BI.sub,E=BI.E,prevExec=BI.prevExec,prevCall=BI.prevCall,words=function(a,b,c){return BI.words(a,b,c);};
+var KW={'if':1,then:1,elif:1,'else':1,fi:1,'for':1,'while':1,until:1,'do':1,done:1,'case':1,esac:1,'function':1,select:1,'in':1,'[[':1,']]':1,'{':1,'}':1,'!':1,time:1};
+function q1(x){return /^[\w.\/:=@%+,-]+$/.test(x)?x:"'"+String(x).replace(/'/g,"'\\''")+"'";}
+function rstr(R){return R.map(function(r){return r.w?r.op+" "+q1(BI.wtext(r.w)):r.op;}).join(' ');}
+function arrLit(self,inner){var T=self.lex(inner.replace(/\n/g,' ')),vals=[],keyed={};T.forEach(function(t){if(!t.w)return;var txt=BI.wtext(t.w),m=/^\[([^\]]*)\]=/.exec(txt);if(m&&!t.w[0].q){var rest=t.w.slice(m[0].length);keyed[m[1]]=BI.wtext(rest).split(SEP).join(' ');vals.push({k:m[1],v:keyed[m[1]]});return;}self.expandWord(t.w).forEach(function(v){vals.push({v:v});});});return vals;}
+function assignArr(self,name,inner,append,assoc){var s=BI.sess(self),vals=arrLit(self,inner);var a=append&&s.arrs[name]?s.arrs[name]:{t:assoc||(s.arrs[name]&&s.arrs[name].t==='A'?'A':'a'),v:{}};
+  if(!append&&s.arrs[name]&&s.arrs[name].t==='A')a.t='A';var next=0;if(append&&a.t==='a'){var ks=BI.arrKeys(a);next=ks.length?(+ks[ks.length-1]+1):0;}
+  if(append&&!s.arrs[name]&&Object.prototype.hasOwnProperty.call(s.vars,name)){a.v[0]=s.vars[name];next=1;}
+  vals.forEach(function(x){if(x.k!=null){var k=a.t==='A'?x.k:String(U.arith(self,x.k));a.v[k]=x.v;if(a.t==='a')next=+k+1;}else{a.v[a.t==='A'?String(next):next]=x.v;next++;}});
+  s.arrs[name]=a;delete s.vars[name];}
+function saveLocal(fr,self,name){if(!fr||Object.prototype.hasOwnProperty.call(fr.locals,name))return;var s=BI.sess(self);fr.locals[name]={has:Object.prototype.hasOwnProperty.call(s.vars,name),v:s.vars[name],arr:s.arrs[name]?JSON.parse(JSON.stringify(s.arrs[name])):null};}
+function callFunc(self,name,args,ctx,inp){var S=self.S,f=BI.funcs(self)[name];if((ctx.depth||0)>150){E(self,ctx,'-bash: '+name+': maximum function nesting level exceeded (150)\n');return 1;}
+  S._fr=S._fr||[];var parent=BI.fr(self);var frame={name:parent?parent.name:(ctx.script?ctx.script.name:'-bash'),args:args,fname:name,locals:{}};S._fr.push(frame);
+  var cx=sub(ctx,{func:frame,depth:(ctx.depth||0)+1,stdin:inp!=null?{buf:inp,pos:0}:ctx.stdin});var rc=0;
+  try{rc=BI.runNode(self,f.body,cx,null,true);}catch(e){if(e instanceof Ctl&&e.k==='return')rc=e.n;else throw e;}
+  finally{var s=BI.sess(self);Object.keys(frame.locals).forEach(function(k){var sv=frame.locals[k];if(sv.has)s.vars[k]=sv.v;else delete s.vars[k];if(sv.arr)s.arrs[k]=sv.arr;else delete s.arrs[k];});var i=S._fr.lastIndexOf(frame);if(i>=0)S._fr.splice(i,1);}
+  return rc;}
+BI.callFunc=callFunc;
+function runSimple(self,n,ctx,input,lastp){var raw=n.raw,inp=input,m;
+  if(n.hs!=null)inp=BI.str1(self,n.hs)+'\n';if(n.hd!=null)inp=n.hdq?n.hd:BI.expandHD(self,n.hd);
+  if(ctx.interactive&&self.S.aliases){var am=/^(\s*)([^\s;&|<>'"\\]+)/.exec(raw);if(am&&self.S.aliases[am[2]]!=null&&!(am[2]==='ll'))raw=am[1]+self.S.aliases[am[2]]+raw.slice(am[0].length);}
+  var posix=ctx.script&&ctx.script.posix;
+  var pre=/^\s*((?:[A-Za-z_]\w*=(?:\$'(?:\\.|[^'])*'|'[^']*'|"(?:\\.|[^"])*"|[^\s'"()])*\s+)+)([A-Za-z_]\w*\+?=\([\s\S]*\)\s*)$/.exec(raw);
+  if(pre){var pw=words(self,pre[1],true);pw.forEach(function(a){var e=a.indexOf('=');BI.setVar(self,a.slice(0,e),a.slice(e+1));});raw=pre[2];}
+  if((m=/^\s*([A-Za-z_]\w*)(\+?)=\(([\s\S]*)\)\s*$/.exec(raw))){if(posix){E(self,ctx,'-bash: Syntax error: "(" unexpected\n');return 2;}if(BI.opts(self).x)E(self,ctx,'+ '+m[1]+m[2]+'=('+m[3]+')\n');assignArr(self,m[1],m[3],!!m[2]);return 0;}
+  if((m=/^\s*([A-Za-z_]\w*)\[([^\]]+)\](\+?)=(\S*)\s*$/.exec(raw))){var s0=BI.sess(self),a=s0.arrs[m[1]];if(!a){a={t:'a',v:{}};if(Object.prototype.hasOwnProperty.call(s0.vars,m[1])){a.v[0]=s0.vars[m[1]];delete s0.vars[m[1]];}s0.arrs[m[1]]=a;}
+    var key=a.t==='A'?BI.str1(self,m[2]):String(U.arith(self,BI.str1(self,m[2])));var val=BI.str1(self,m[4]);a.v[key]=m[3]?(a.v[key]||'')+val:val;return 0;}
+  if((m=/^\s*(declare|typeset|local|readonly)((?:\s+-[a-zA-Z]+)*)\s+([A-Za-z_]\w*)(\+?)=\(([\s\S]*)\)\s*$/.exec(raw))){if((m[1]==='local'||((m[1]==='declare'||m[1]==='typeset')&&!/g/.test(m[2])))&&ctx.func)saveLocal(ctx.func,self,m[3]);else if(m[1]==='local'){E(self,ctx,'-bash: local: can only be used in a function\n');return 1;}
+    assignArr(self,m[3],m[5],!!m[4],/A/.test(m[2])?'A':null);return 0;}
+  if(input==null&&n.hs==null&&n.hd==null&&plain(self,raw)&&!BI.opts(self).x&&!BI.opts(self).u&&!/^\s*[A-Za-z_]\w*\+=/.test(raw)&&!/\$\{[^}]*\?/.test(raw)&&!(BI.sess(self).ro&&Object.keys(BI.sess(self).ro).length&&/^\s*[A-Za-z_]\w*=/.test(raw))){var r=prevExec.call(self,raw,ctx.o);r.lines.forEach(function(l){ctx.W(BI.errMsg(self,ctx,l.t),l.e);});return r.rc;}
+  self._substErr=[];self._paramErr=null;self._arithErr=null;var T,L;
+  try{T=self.lex(raw);L=self.parse(T);}catch(e){if(e&&e.syn){E(self,ctx,'-bash: '+e.syn+'\n');return 2;}throw e;}
+  (self._substErr||[]).forEach(function(l){ctx.W(BI.errMsg(self,ctx,l.t),1);});
+  if(self._paramErr){E(self,ctx,self._paramErr);self._paramErr=null;if(ctx.script)throw new Ctl('exit',1);return 1;}
+  if(self._arithErr){E(self,ctx,self._arithErr);self._arithErr=null;return 1;}
+  if(!L.length)return 0;var cmd=L[0].pipe[0],argv=[];cmd.w.forEach(function(w){argv.push.apply(argv,self.expandWord(w));});
+  var assigns=[];while(argv.length&&/^[A-Za-z_][A-Za-z0-9_]*\+?=/.test(argv[0]))assigns.push(argv.shift());
+  if(BI.opts(self).x&&(argv.length||assigns.length))E(self,ctx,'+ '+assigns.concat(argv).map(q1).join(' ')+'\n');
+  if(!argv.length){try{assigns.forEach(function(a){var e=a.indexOf('='),k=a.slice(0,e),v=a.slice(e+1);if(k[k.length-1]==='+'){k=k.slice(0,-1);v=(self.getVar(k)||'')+v;}BI.setVar(self,k,v);});}catch(er){if(er&&er.ro){E(self,ctx,'-bash: '+er.ro+': readonly variable\n');return 1;}throw er;}
+    if(cmd.r.length)return BI.withRedir(self,rstr(cmd.r),ctx,inp,function(){return 0;});return 0;}
+  var name=argv[0],args=argv.slice(1),rs=rstr(cmd.r);
+  function temp(fn){if(!assigns.length)return fn();var s=self.cur(),saved={};assigns.forEach(function(a){var e=a.indexOf('='),k=a.slice(0,e);saved[k]=Object.prototype.hasOwnProperty.call(s.vars,k)?s.vars[k]:undefined;s.vars[k]=a.slice(e+1);});
+    try{return fn();}finally{Object.keys(saved).forEach(function(k){if(saved[k]===undefined)delete s.vars[k];else s.vars[k]=saved[k];});}}
+  if(BI.funcs(self)[name]&&!(ctx.noFunc))return temp(function(){return BI.withRedir(self,rs,ctx,inp,function(cx,i2){return callFunc(self,name,args,cx,i2);});});
+  if(BI.MYB[name]&&!(name==='exit'&&!ctx.script&&!ctx.subshell))return temp(function(){return BI.withRedir(self,rs,ctx,inp,function(cx,i2){return builtin(self,name,args,cx,i2);});});
+  var W=function(t,e){ctx.W(BI.errMsg(self,ctx,t),e);};var r2=self.runCmd(cmd,inp,W,ctx.o,true);return r2.rc;}
+function plain(self,raw){var m=/^\s*(?:[A-Za-z_]\w*=\S*\s+)*([^\s;&|<>]+)/.exec(raw);if(!m)return true;var w=m[1];if(BI.MYB[w]||BI.funcs(self)[w])return false;if(w==='bash'||w==='sh')return true;return true;}
+BI.runSimpleImpl=runSimple;
+/* ---------- read ---------- */
+function doRead(self,args,cx,inp){var o={r:false,p:null,a:null,n:null,d:'\n',s:false,t:null},names=[];
+  for(var i=0;i<args.length;i++){var x=args[i];if(x[0]==='-'&&x.length>1&&!names.length){for(var k=1;k<x.length;k++){var f=x[k];if('rse'.indexOf(f)>=0){o[f]=true;continue;}if('panudti'.indexOf(f)>=0){var v=x.slice(k+1)||args[++i];if(f==='p')o.p=v;else if(f==='a')o.a=v;else if(f==='n'||f==='N')o.n=+v;else if(f==='d')o.d=v?v[0]:'\0';else if(f==='t')o.t=v;break;}E(self,cx,'-bash: read: -'+f+': invalid option\nread: usage: read [-ers] [-a array] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] [-t timeout] [-u fd] [name ...]\n');return 2;}}else names.push(x);}
+  var st=inp!=null?{buf:inp,pos:0}:cx.stdin;
+  if(!st){if(o.p!=null)E(self,cx,o.p);E(self,cx,(o.p!=null?'\n':'')+'(simulator: مفيش keyboard input هنا — ابعت القيمة بـ pipe أو here-string، مثلاً: echo Ali | ./script.sh   أو   read name <<< "Ali")\n');(names.length?names:['REPLY']).forEach(function(nm){BI.setVar(self,nm,'');});return 1;}
+  if(st.pos>=st.buf.length){(names.length?names:['REPLY']).forEach(function(nm){BI.setVar(self,nm,'');});if(o.a)BI.sess(self).arrs[o.a]={t:'a',v:{}};return 1;}
+  var line='',eofHit=false;
+  if(o.n!=null){line=st.buf.substr(st.pos,o.n);var nl=line.indexOf(o.d);if(nl>=0){line=line.slice(0,nl);st.pos+=nl+1;}else st.pos+=line.length;}
+  else for(;;){var e=st.buf.indexOf(o.d,st.pos);var part;if(e<0){part=st.buf.slice(st.pos);st.pos=st.buf.length;eofHit=true;}else{part=st.buf.slice(st.pos,e);st.pos=e+1;}
+    if(!o.r&&/\\$/.test(part)&&!/\\\\$/.test(part)&&!eofHit){line+=part.slice(0,-1);continue;}line+=part;break;}
+  if(!o.r)line=line.replace(/\\(.)/g,'$1');
+  var IFS=Object.prototype.hasOwnProperty.call(self.cur().vars,'IFS')?self.cur().vars.IFS:' \t\n';
+  function isW(c){return IFS.indexOf(c)>=0&&/[ \t\n]/.test(c);}function isS(c){return IFS.indexOf(c)>=0;}
+  function fields(str,max){var ws='',nws='';for(var q=0;q<IFS.length;q++){if(/[ \t\n]/.test(IFS[q]))ws+=IFS[q];else nws+=IFS[q];}
+    function esc(x){return x.replace(/[\]\\^-]/g,'\\$&');}var W0=ws?'['+esc(ws)+']':'',Ns=nws?'['+esc(nws)+']':'';
+    var re=new RegExp(Ns?(W0?W0+'*'+Ns+W0+'*|'+W0+'+':Ns):(W0+'+'),'g');
+    if(ws){str=str.replace(new RegExp('^'+W0+'+'),'');}
+    var out=[],pos=0,m;re.lastIndex=0;
+    while(true){if(max&&out.length===max-1){var r=str.slice(pos);if(ws)r=r.replace(new RegExp(W0+'+$'),'');out.push(r);return out;}
+      m=re.exec(str);if(!m||m[0]===''){var r2=str.slice(pos);if(ws)r2=r2.replace(new RegExp(W0+'+$'),'');if(r2!==''||!out.length&&str!=='')out.push(r2);return out;}
+      if(m.index+m[0].length===str.length&&!(Ns&&new RegExp(Ns).test(m[0]))){out.push(str.slice(pos,m.index));return out;}
+      out.push(str.slice(pos,m.index));pos=m.index+m[0].length;}}
+  if(o.a){var fl=fields(line,0);if(IFS===''){fl=[line];}var a={t:'a',v:{}};fl.forEach(function(v,i){a.v[i]=v;});BI.sess(self).arrs[o.a]=a;return eofHit&&o.n==null?1:0;}
+  if(!names.length){BI.setVar(self,'REPLY',line);return eofHit&&o.n==null?1:0;}
+  var F=IFS===''?[line]:fields(line,names.length);names.forEach(function(nm,i){BI.setVar(self,nm,F[i]==null?'':F[i]);});
+  return eofHit&&o.n==null?1:0;}
+/* ---------- builtins ---------- */
+function builtin(self,name,args,cx,inp){var S=self.S,s=BI.sess(self),fr=BI.fr(self),out=function(t){cx.W(t,0);};
+  switch(name){
+  case ':':return 0;
+  case 'read':return doRead(self,args,cx,inp);
+  case 'local':case 'declare':case 'typeset':case 'readonly':{var fl='',vs=[];args.forEach(function(x){if(/^[-+][a-zA-Z]+$/.test(x)&&!vs.length)fl+=x.slice(1);else vs.push(x);});
+    if(name==='local'&&!cx.func){E(self,cx,'-bash: local: can only be used in a function\n');return 1;}
+    if(/p/.test(fl)||(!vs.length&&name!=='local')){var nm=vs.length?vs:Object.keys(s.vars).concat(Object.keys(s.arrs)).sort();var rc=0;nm.forEach(function(k){if(s.arrs[k]){var a=s.arrs[k];out('declare -'+(a.t==='A'?'A':'a')+' '+k+'=('+BI.arrKeys(a).map(function(i){return '['+i+']="'+a.v[i]+'"';}).join(' ')+')\n');}else if(Object.prototype.hasOwnProperty.call(s.vars,k))out('declare '+((s.ro||{})[k]?'-r':'--')+' '+k+'="'+s.vars[k]+'"\n');else{E(self,cx,'-bash: declare: '+k+': not found\n');rc=1;}});return rc;}
+    if(/f/i.test(fl)){var F=BI.funcs(self);(vs.length?vs:Object.keys(F).sort()).forEach(function(k){if(F[k])out(/F/.test(fl)?'declare -f '+k+'\n':fmtFunc(k,F[k])+'\n');});return 0;}
+    var asLocal=cx.func&&(name==='local'||((name==='declare'||name==='typeset')&&!/g/.test(fl)));
+    try{vs.forEach(function(x){var e=x.indexOf('='),k=e>0?x.slice(0,e):x,v=e>0?x.slice(e+1):null;if(!/^[A-Za-z_]\w*$/.test(k)){throw {inv:x};}if(asLocal)saveLocal(cx.func,self,k);
+      if(/a/.test(fl)&&!s.arrs[k]){s.arrs[k]={t:'a',v:{}};delete s.vars[k];}if(/A/.test(fl)&&(!s.arrs[k]||s.arrs[k].t!=='A')){s.arrs[k]={t:'A',v:{}};delete s.vars[k];}
+      if(v!=null){if(/i/.test(fl))v=String(U.arith(self,v));BI.setVar(self,k,v);}else if(asLocal&&!/[aA]/.test(fl)){delete s.arrs[k];s.vars[k]='';}
+      if(name==='readonly'||/r/.test(fl)){s.ro=s.ro||{};s.ro[k]=1;}});}catch(er){if(er&&er.inv){E(self,cx,'-bash: '+name+": `"+er.inv+"': not a valid identifier\n");return 1;}if(er&&er.ro){E(self,cx,'-bash: '+er.ro+': readonly variable\n');return 1;}throw er;}
+    return 0;}
+  case 'return':{if(!cx.func&&!cx.sourcing){E(self,cx,"-bash: return: can only `return' from a function or sourced script\n");return 1;}var n=args.length?parseInt(args[0],10):S.rc;if(isNaN(n)){E(self,cx,'-bash: return: '+args[0]+': numeric argument required\n');n=2;}throw new Ctl('return',((n%256)+256)%256);}
+  case 'break':case 'continue':{var k2=args.length?parseInt(args[0],10):1;if(!(k2>=1)){E(self,cx,'-bash: '+name+': '+args[0]+': loop count out of range\n');return 1;}throw new Ctl(name,k2);}
+  case 'exit':{var n2=args.length?parseInt(args[0],10):S.rc;if(isNaN(n2)){E(self,cx,'-bash: exit: '+args[0]+': numeric argument required\n');n2=2;}throw new Ctl('exit',((n2%256)+256)%256);}
+  case 'shift':{var A=fr?fr.args:(S._topArgs=S._topArgs||[]);var k3=args.length?parseInt(args[0],10):1;if(k3>A.length)return 1;A.splice(0,k3);return 0;}
+  case 'set':{var O=BI.opts(self);if(!args.length){Object.keys(s.vars).sort().forEach(function(k){out(k+"='"+s.vars[k]+"'\n");});return 0;}
+    var MAP={e:'e',errexit:'e',u:'u',nounset:'u',x:'x',xtrace:'x',pipefail:'pipefail',v:'v',verbose:'v',f:'f',noglob:'f',n:'n'};
+    for(var i=0;i<args.length;i++){var x=args[i];if(x==='--'){var rest=args.slice(i+1);if(fr)fr.args=rest;else S._topArgs=rest;return 0;}
+      if(x==='-o'||x==='+o'){var on=x==='-o',op=args[++i];if(op==null){['errexit','nounset','pipefail','xtrace'].forEach(function(k){out((k+'           ').slice(0,15)+'\t'+(O[MAP[k]]?'on':'off')+'\n');});return 0;}if(!MAP[op]){E(self,cx,'-bash: set: '+op+': invalid option name\n');return 2;}O[MAP[op]]=on;continue;}
+      if(/^[-+][a-zA-Z]+$/.test(x)){var on2=x[0]==='-';for(var j=1;j<x.length;j++){if(!MAP[x[j]]){E(self,cx,'-bash: set: '+x[0]+x[j]+': invalid option\n');return 2;}O[MAP[x[j]]]=on2;}continue;}
+      var rest2=args.slice(i);if(fr)fr.args=rest2;else S._topArgs=rest2;return 0;}
+    return 0;}
+  case 'trap':{S._traps=S._traps||{};if(!args.length||args[0]==='-p'){Object.keys(S._traps).forEach(function(k){out("trap -- '"+S._traps[k]+"' "+k+'\n');});return 0;}
+    if(args[0]==='-l'){out(' 1) SIGHUP\t 2) SIGINT\t 3) SIGQUIT\t 4) SIGILL\t 5) SIGTRAP\n 6) SIGABRT\t 7) SIGBUS\t 8) SIGFPE\t 9) SIGKILL\t10) SIGUSR1\n11) SIGSEGV\t12) SIGUSR2\t13) SIGPIPE\t14) SIGALRM\t15) SIGTERM\n');return 0;}
+    var act=args[0],sigs=args.slice(1);if(!sigs.length){sigs=[act];act='-';}
+    for(var q=0;q<sigs.length;q++){var sg=String(sigs[q]).toUpperCase().replace(/^SIG/,'');if(sg==='0')sg='EXIT';if(!/^(EXIT|INT|TERM|HUP|QUIT|ERR|DEBUG|RETURN|USR1|USR2|KILL|STOP)$/.test(sg)&&!/^\d+$/.test(sg)){E(self,cx,'-bash: trap: '+sigs[q]+': invalid signal specification\n');return 1;}
+      if(sg==='1')sg='HUP';if(sg==='2')sg='INT';if(sg==='15')sg='TERM';if(act==='-')delete S._traps[sg];else S._traps[sg]=act;}return 0;}
+  case 'eval':return BI.runText(self,args.join(' '),cx);
+  case 'alias':{var AL=BI.aliases(self);if(!args.length||args[0]==='-p'){Object.keys(AL).sort().forEach(function(k){out('alias '+k+"='"+AL[k]+"'\n");});return 0;}var rc2=0;
+    args.forEach(function(x){var e=x.indexOf('=');if(e>0){AL[x.slice(0,e)]=x.slice(e+1);}else if(AL[x]!=null)out('alias '+x+"='"+AL[x]+"'\n");else{E(self,cx,'-bash: alias: '+x+': not found\n');rc2=1;}});return rc2;}
+  case 'unalias':{var AL2=BI.aliases(self);if(args[0]==='-a'){S.aliases={};return 0;}var rc3=0;if(!args.length){E(self,cx,'unalias: usage: unalias [-a] name [name ...]\n');return 2;}args.forEach(function(x){if(AL2[x]!=null)delete AL2[x];else{E(self,cx,'-bash: unalias: '+x+': not found\n');rc3=1;}});return rc3;}
+  case 'mapfile':case 'readarray':{var t=false,an='MAPFILE';args.forEach(function(x){if(x==='-t')t=true;else if(x[0]!=='-')an=x;});var src=inp!=null?inp:(cx.stdin?cx.stdin.buf.slice(cx.stdin.pos):'');if(cx.stdin&&inp==null)cx.stdin.pos=cx.stdin.buf.length;
+    var ls=src.split('\n');if(ls[ls.length-1]==='')ls.pop();var a2={t:'a',v:{}};ls.forEach(function(l,i){a2.v[i]=t?l:l+'\n';});s.arrs[an]=a2;delete s.vars[an];return 0;}
+  case 'command':{if(args[0]==='-v'||args[0]==='-V'){var rc4=0;args.slice(1).forEach(function(c){if(BI.aliases(self)[c]!=null&&args[0]==='-v')out('alias '+c+"='"+BI.aliases(self)[c]+"'\n");else if(BI.funcs(self)[c]||BI.MYB[c]||KW[c]||U.BUILTIN[c])out(c+'\n');else{var p=self.inPath(c);if(p&&self['c_'+c])out(p+'\n');else if(p)out(p+'\n');else rc4=1;}});return rc4;}
+    if(!args.length)return 0;var cx2=sub(cx,{noFunc:1});return BI.runSimpleImpl(self,{t:'simple',raw:args.map(q1).join(' '),line:cx.line},cx2,inp,true);}
+  case 'unset':{var f2=false,v2=false;var rc5=0;args.forEach(function(x){if(x==='-f'){f2=true;return;}if(x==='-v'){v2=true;return;}var m=/^([A-Za-z_]\w*)\[(.+)\]$/.exec(x);
+      if(m){var a=s.arrs[m[1]];if(a){var key=a.t==='A'?m[2]:String(U.arith(self,m[2]));delete a.v[key];}return;}
+      if((s.ro||{})[x]){E(self,cx,'-bash: unset: '+x+': cannot unset: readonly variable\n');rc5=1;return;}
+      if(f2){delete BI.funcs(self)[x];return;}if(Object.prototype.hasOwnProperty.call(s.vars,x)||s.arrs[x]){delete s.vars[x];delete s.arrs[x];return;}if(!v2&&BI.funcs(self)[x])delete BI.funcs(self)[x];});return rc5;}
+  case 'type':{var tflag=false,rc6=0;args.forEach(function(c){if(c==='-t'){tflag=true;return;}var AL3=self.S.aliases||{};
+      if(AL3[c]!=null&&c!=='ll'){out(tflag?'alias\n':c+" is aliased to `"+AL3[c]+"'\n");return;}
+      if(KW[c]){out(tflag?'keyword\n':c+' is a shell keyword\n');return;}
+      if(BI.funcs(self)[c]){out(tflag?'function\n':c+' is a function\n'+fmtFunc(c,BI.funcs(self)[c])+'\n');return;}
+      if(BI.MYB[c]){out(tflag?'builtin\n':c+' is a shell builtin\n');return;}
+      var buf='',eb='';var r=prevCall.call(self,['type',c],{out:function(t){buf+=t;},err:function(t){eb+=t;},stdin:null});if(tflag){if(buf){out(/builtin/.test(buf)?'builtin\n':/aliased/.test(buf)?'alias\n':'file\n');}else rc6=1;return;}out(buf);if(eb){E(self,cx,eb);rc6=1;}});return rc6;}
+  case 'source':case '.':{if(!args.length){E(self,cx,'-bash: '+name+': filename argument required\n'+name+': usage: '+name+' filename [arguments]\n');return 2;}return runScript(self,args[0],args.slice(1),cx,{source:true});}
+  case 'getopts':{if(args.length<2){E(self,cx,'getopts: usage: getopts optstring name [arg ...]\n');return 2;}var ostr=args[0],vn=args[1],av=args.length>2?args.slice(2):BI.posArgs(self);
+    var ind=parseInt(self.getVar('OPTIND')||'1',10)||1,sub0=S._optSub||0;var silent=ostr[0]===':';if(silent)ostr=ostr.slice(1);
+    var cur=av[ind-1];if(cur==null||cur==='--'||cur[0]!=='-'||cur==='-'){if(cur==='--')BI.setVar(self,'OPTIND',String(ind+1));BI.setVar(self,vn,'?');S._optSub=0;return 1;}
+    var pos=sub0||1,ch=cur[pos],k4=ostr.indexOf(ch);var nextSub=pos+1<cur.length?pos+1:0;
+    if(k4<0||ch===':'){BI.setVar(self,vn,'?');if(silent)BI.setVar(self,'OPTARG',ch);else E(self,cx,(BI.fr(self)?BI.fr(self).name:'-bash')+': illegal option -- '+ch+'\n');}
+    else if(ostr[k4+1]===':'){var arg=pos+1<cur.length?cur.slice(pos+1):av[ind];if(arg==null){if(silent){BI.setVar(self,vn,':');BI.setVar(self,'OPTARG',ch);}else{E(self,cx,(BI.fr(self)?BI.fr(self).name:'-bash')+': option requires an argument -- '+ch+'\n');BI.setVar(self,vn,'?');}BI.setVar(self,'OPTIND',String(ind+1));S._optSub=0;return 0;}
+      BI.setVar(self,vn,ch);BI.setVar(self,'OPTARG',arg);BI.setVar(self,'OPTIND',String(ind+(pos+1<cur.length?1:2)));S._optSub=0;return 0;}
+    else BI.setVar(self,vn,ch);
+    if(nextSub){S._optSub=nextSub;}else{S._optSub=0;BI.setVar(self,'OPTIND',String(ind+1));}return 0;}
+  }return 0;}
+function fmtFunc(name,f){var src=f.src.replace(/^function\s+/,'');var m=/^([\w.:-]+)\s*(\(\s*\))?\s*([\s\S]*)$/.exec(src);var body=m?m[3]:src;body=body.trim();
+  if(/^\{/.test(body)){var inner=body.replace(/^\{\s*/,'').replace(/\s*\}$/,'');var parts=inner.split(/\s*;\s*|\n\s*/).filter(Boolean);return name+' () \n{ \n'+parts.map(function(p){return '    '+p.replace(/;$/,'');}).join(';\n')+'\n}';}return name+' () \n'+body;}
+/* ---------- scripts ---------- */
+function runScript(self,path,args,ctx,opt){opt=opt||{};var r=self.res(path);var disp=path;
+  if(!r.n){E(self,ctx,(opt.source?'-bash: ':'bash: ')+path+': No such file or directory\n');return opt.source?1:127;}
+  if(r.n.t==='d'){E(self,ctx,'-bash: '+path+': is a directory\n');return 1;}if(!self.can(r.n,'r')){E(self,ctx,(opt.source?'-bash: ':'bash: ')+path+': Permission denied\n');return 126;}
+  return runSource(self,self.content(r.n),disp,args,ctx,opt);}
+function runSource(self,txt,disp,args,ctx,opt){var S=self.S,first=txt.split('\n')[0];var posix=!opt.forceBash&&/^#!\s*\/(usr\/)?bin\/(env\s+)?(sh|dash)\b/.test(first);
+  var L,synE=null;try{L=BI.parse(txt);}catch(e){if(!(e&&e.syn))throw e;synE=e;var lines=txt.split('\n');L=null;if(!opt.check)for(var k=Math.min(e.line-1,lines.length);k>0;k--){try{L=BI.parse(lines.slice(0,k).join('\n'));break;}catch(e2){}}if(!L)L={t:'list',items:[]};}
+  if(opt.check){if(synE){ctx.W(disp+': line '+synE.line+': '+synE.syn+'\n',1);return 2;}return 0;}
+  var sj=opt.source?null:BI.snap(self);S._fr=S._fr||[];var frame=null;
+  if(opt.source){if(args.length){frame={name:(BI.fr(self)||{}).name||'-bash',args:args,locals:{},src:1};S._fr.push(frame);}}
+  else{frame={name:disp,args:args,locals:{},script:1};S._fr.push(frame);S._traps={};var O={};if(opt.x)O.x=true;if(opt.e)O.e=true;S._opts=O;}
+  var cx=BI.sub(ctx,{script:opt.source?ctx.script:{name:disp,posix:posix},func:opt.source?ctx.func:null,sourcing:!!opt.source,interactive:false,depth:(ctx.depth||0)+1,cond:0,lineBase:0,subshell:0});
+  var rc=0;
+  try{rc=BI.runList(self,L,cx);if(synE){var ln=(txt.split('\n')[synE.line-1]||'').trim();ctx.W((opt.source?'-bash: ':'')+disp+': line '+synE.line+': '+synE.syn+'\n'+(/near unexpected token/.test(synE.syn)?(opt.source?'-bash: ':'')+disp+': line '+synE.line+': `'+ln+"'\n":''),1);rc=2;}}catch(e){if(e instanceof Ctl){if(e.k==='exit'||e.k==='return')rc=e.n;else if(e.k==='limit'){BI.E(self,cx,'(simulator) الـ loop اتكرر أكتر من 5000 مرة — وقفناه. غالباً infinite loop: اتأكد إن الشرط بيتغير جوه الـ loop.\n');rc=1;}else rc=0;}else throw e;}
+  finally{if(!opt.source){var tr=(S._traps||{}).EXIT;if(tr){try{BI.runText(self,tr,cx);}catch(e2){}}}
+    if(frame){var i=S._fr.lastIndexOf(frame);if(i>=0)S._fr.splice(i,1);}if(sj)BI.restore(self,sj);}
+  S.rc=rc;return rc;}
+BI.runScript=runScript;BI.runSource=runSource;
+/* ---------- hooks: P.call (scripts by path / in PATH), bash/sh, source ---------- */
+function ioCtx(self,io){var W=function(t,e){if(e)io.err(t);else io.out(t);};var c=new BI.Ctx(W,{capture:io.tty===false?1:0});if(io.stdin!=null)c.stdin={buf:io.stdin,pos:0};return c;}
+P.call=function(argv,io){var name=argv[0],self=this;
+  if(name&&name.indexOf('/')>=0){var r=this.res(name);if(r.n&&r.n.t==='f'){var c=this.content(r.n);if(c.indexOf('\x7fELF')!==0&&c.indexOf('#!sim-echo ')<0){
+        if(!this.can(r.n,'x')||!this.can(r.n,'r')){io.err('-bash: '+name+': Permission denied\n');return 126;}
+        var bad=/^#!\s*(\S+)/.exec(c);if(bad&&!/\/(bash|sh|dash|env)$/.test(bad[1])&&!this.res(bad[1]).n){io.err('-bash: '+name+': '+bad[1]+': bad interpreter: No such file or directory\n');return 126;}
+        return runSource(this,c,name,argv.slice(1),ioCtx(this,io),{});}}}
+  else if(name&&!this['c_'+name]&&!BI.funcs(this)[name]){var p=this.inPath(name);if(p){var r2=this.res(p);if(r2.n&&r2.n.t==='f'){var c2=this.content(r2.n);if(c2.indexOf('\x7fELF')!==0&&/^#!/.test(c2)){if(!this.can(r2.n,'x')){io.err('-bash: '+p+': Permission denied\n');return 126;}return runSource(this,c2,p,argv.slice(1),ioCtx(this,io),{});}}}}
+  if(name&&BI.funcs(this)[name]){return BI.callFunc(this,name,argv.slice(1),ioCtx(this,io),io.stdin);}
+  return prevCall.call(this,argv,io);};
+Sh.ext({c_bash:function(a,io){var o={x:false,e:false,n:false},i=0;for(;i<a.length;i++){var x=a[i];if(x==='-c'){var txt=a[i+1];if(txt==null){io.err('bash: -c: option requires an argument\n');return 2;}var nm=a[i+2]||'bash';return runSource(this,txt,nm,a.slice(i+3),ioCtx(this,io),{x:o.x,e:o.e,forceBash:true,check:o.n});}
+      if(/^-[xenv]+$/.test(x)){if(x.indexOf('x')>=0)o.x=true;if(x.indexOf('e')>=0)o.e=true;if(x.indexOf('n')>=0)o.n=true;continue;}if(x==='--')continue;break;}
+    if(i<a.length)return runScriptIO(this,a[i],a.slice(i+1),io,{x:o.x,e:o.e,check:o.n,forceBash:true});
+    if(io.stdin!=null&&io.stdin!==''){return runSource(this,io.stdin,'bash',[],new BI.Ctx(function(t,e){if(e)io.err(t);else io.out(t);},{}),{x:o.x,e:o.e,forceBash:true});}
+    io.out('(simulator) bash جوه bash — اكتب exit عشان ترجع\n');this.S.sess.push(JSON.parse(JSON.stringify(this.cur())));this.cur().login=false;return 0;},
+  c_sh:function(a,io){var o={x:false,e:false,n:false},i=0;for(;i<a.length;i++){var x=a[i];if(x==='-c'){var txt=a[i+1];if(txt==null){io.err('sh: 0: -c requires an argument\n');return 2;}return runSource(this,'#!/bin/sh\n'+txt,a[i+2]||'sh',a.slice(i+3),ioCtx(this,io),{x:o.x,e:o.e});}
+      if(/^-[xenv]+$/.test(x)){if(x.indexOf('x')>=0)o.x=true;if(x.indexOf('e')>=0)o.e=true;if(x.indexOf('n')>=0)o.n=true;continue;}break;}
+    if(i<a.length){var r=this.res(a[i]);if(!r.n){io.err('sh: 0: cannot open '+a[i]+': No such file\n');return 2;}var c=this.content(r.n);return runSource(this,/^#!/.test(c)?c.replace(/^#![^\n]*/,'#!/bin/sh'):'#!/bin/sh\n'+c,a[i],a.slice(i+1),ioCtx(this,io),{x:o.x,e:o.e,check:o.n});}
+    return this.c_bash(a,io);},
+  c_source:function(a,io){var c=ioCtx(this,io);if(!a.length){io.err('-bash: source: filename argument required\nsource: usage: source filename [arguments]\n');return 2;}return runScript(this,a[0],a.slice(1),c,{source:true});}});
+P['c_.']=P.c_source;
+function runScriptIO(self,path,args,io,opt){var c=ioCtx(self,io);var r=self.res(path);if(!r.n){io.err('bash: '+path+': No such file or directory\n');return 127;}if(r.n.t==='d'){io.err('bash: '+path+': Is a directory\n');return 126;}if(!self.can(r.n,'r')){io.err('bash: '+path+': Permission denied\n');return 126;}
+  return runSource(self,self.content(r.n),path,args,c,opt);}
+/* ---------- interactive entry ---------- */
+var KWRE=/(^|[;&|(){}]|\b(?:then|do|else|elif)\b)\s*(if|for|while|until|case|select|function|\[\[|\(\(?|\{|!)(?=[\s(]|$)/;
+function needI(self,line){if(/\n/.test(line)||/<</.test(line)||/\$\{[^}]*\?/.test(line)||/(^|[\s;&|])[A-Za-z_]\w*\+=/.test(line))return true;if(KWRE.test(line))return true;if(/(^|[;&|]\s*)\(/.test(line))return true;
+  if(/(^|[;&|]\s*)[A-Za-z_][\w.:-]*\s*\(\s*\)/.test(line))return true;if(/(^|[\s;&|])[A-Za-z_]\w*(\[[^\]]*\])?\+?=\(/.test(line)||/(^|[\s;&|])[A-Za-z_]\w*\[[^\]]+\]\+?=/.test(line))return true;
+  var O=self.S._opts;if(O&&(O.x||O.e||O.pipefail||O.u))return true;var F=self.S.funcs||{},AL=self.S.aliases||{};
+  var segs=line.split(/&&|\|\||[;&|`]|\$\(/);for(var i=0;i<segs.length;i++){var m=/^\s*(?:[A-Za-z_]\w*=\S*\s+)*([^\s()<>]+)/.exec(segs[i]);if(!m)continue;var w=m[1];if(BI.MYB[w]||F[w]||(AL[w]!=null&&w!=='ll'))return true;}
+  return false;}
+P.exec=function(line,o){o=o||{};if(!needI(this,line))return prevExec.call(this,line,o);var S=this.S,lines=[];var W=function(t,e){if(t)lines.push({t:t,e:!!e});};
+  var ctx=new BI.Ctx(W,o);ctx.interactive=!(S._fr&&S._fr.length)&&!o.capture;ctx.loopsN=0;var rc;
+  try{var L=BI.parse(line);rc=BI.runList(this,L,ctx);}
+  catch(e){if(e&&e.syn){W('-bash: '+e.syn+'\n',1);rc=2;}else if(e instanceof Ctl){if(e.k==='limit'){W('(simulator) الـ loop اتكرر أكتر من 5000 مرة — وقفناه. غالباً infinite loop.\n',1);rc=1;}else if(e.k==='exit'){rc=e.n;}else if(e.k==='return'){W("-bash: return: can only `return' from a function or sourced script\n",1);rc=1;}else rc=0;}else throw e;}
+  S.rc=rc;return {lines:lines,out:lines.filter(function(x){return !x.e;}).map(function(x){return x.t;}).join(''),rc:rc};};
+U.BUILTIN.read=1;U.BUILTIN.local=1;U.BUILTIN.declare=1;U.BUILTIN.set=1;U.BUILTIN.trap=1;U.BUILTIN.shift=1;U.BUILTIN.eval=1;U.BUILTIN.unalias=1;U.BUILTIN.readonly=1;U.BUILTIN.mapfile=1;U.BUILTIN.readarray=1;U.BUILTIN.getopts=1;U.BUILTIN[':']=1;U.BUILTIN.command=1;U.BUILTIN.typeset=1;U.BUILTIN['return']=1;U.BUILTIN['break']=1;U.BUILTIN['continue']=1;U.BUILTIN.source=1;U.BUILTIN['.']=1;
+Sh.addCmds(['read','local','declare','typeset','readonly','set','trap','shift','eval','unalias','mapfile','readarray','getopts',':','command','return','break','continue','.'],
+ {read:'read a line from standard input (builtin)',local:'define local variables in a function (builtin)',declare:'declare variables and give them attributes (builtin)',set:'set or unset shell options and positional parameters (builtin)',trap:'trap signals and other events (builtin)',shift:'shift positional parameters (builtin)',eval:'execute arguments as a shell command (builtin)',unalias:'remove alias definitions (builtin)',mapfile:'read lines from stdin into an array (builtin)',getopts:'parse option arguments (builtin)',command:'run a command bypassing functions / command -v (builtin)'},
+ {read:'read [-r] [-p PROMPT] [-a ARRAY] [-n N] [-s] [NAME...]',set:'set [-euxo pipefail] [-- ARGS...]',trap:"trap 'CMD' EXIT|INT|TERM|ERR",declare:'declare [-a|-A|-i|-r|-p|-f] NAME[=VALUE]',local:'local NAME[=VALUE]',mapfile:'mapfile [-t] ARRAY < FILE'});
+})();
+/* history expansion (!! !n !-n !str !$) */
+(function(){var Sh=window.ELSim;if(!Sh)return;var P=Sh.prototype,prevRun=P.run;
+function hx(line,H){if(line.indexOf('!')<0)return {l:line};var out='',i=0,q=null,changed=false;
+  while(i<line.length){var c=line[i];if(c==="'"&&q!=='"'){q=q?null:"'";out+=c;i++;continue;}if(c==='"'&&q!=="'"){q=q?null:'"';out+=c;i++;continue;}
+    if(c==='\\'){out+=line.substr(i,2);i+=2;continue;}
+    if(c==='!'&&q!=="'"&&line[i-1]!=='['){var r=line.slice(i+1),m,ev=null,tok;
+      if(r[0]==='!'){ev=H[H.length-1];tok='!!';}else if((m=/^-(\d+)/.exec(r))){ev=H[H.length-(+m[1])];tok='!'+m[0];}else if((m=/^(\d+)/.exec(r))){ev=H[+m[1]-1];tok='!'+m[0];}
+      else if(r[0]==='$'){var L=H[H.length-1]||'';var ws=L.trim().split(/\s+/);ev=ws[ws.length-1];tok='!$';if(ev==null)return {err:'-bash: !$: event not found\n'};out+=ev;i+=2;changed=true;continue;}
+      else if((m=/^([A-Za-z_.\/][^\s;&|()<>"']*)/.exec(r))){for(var k=H.length-1;k>=0;k--){if(H[k].indexOf(m[1])===0){ev=H[k];break;}}tok='!'+m[1];}
+      else{out+=c;i++;continue;}
+      if(ev==null)return {err:'-bash: '+tok+': event not found\n'};out+=ev;i+=tok.length;changed=true;continue;}
+    out+=c;i++;}
+  return {l:out,changed:changed};}
+P.run=function(line){var S=this.S,H=S.hist||[];var r0=hx(line,H);
+  if(r0.err){S.rc=1;if(line.trim()&&H[H.length-1]!==line){}return {lines:[{t:r0.err,e:true}],out:'',rc:1,cmd:line};}
+  if(r0.changed){var r=prevRun.call(this,r0.l);r.lines.unshift({t:r0.l+'\n',e:false});r.out=r0.l+'\n'+r.out;r.cmd=line;return r;}
+  return prevRun.call(this,line);};
+})();
+/* PS2 continuation: incomplete input waits for more lines */
+(function(){var Sh=window.ELSim;if(!Sh||!Sh.BI)return;var P=Sh.prototype,BI=Sh.BI,prevRun=P.run,prevPrompt=P.prompt;
+function incomplete(txt){try{BI.parse(txt,true);return false;}catch(e){if(e&&e.syn&&/unexpected end of file|unexpected EOF while looking for matching/.test(e.syn))return true;return false;}}
+function quoteOpen(txt){var q=null;for(var i=0;i<txt.length;i++){var c=txt[i];if(q){if(c===q)q=null;else if(c==='\\'&&q==='"')i++;continue;}if(c==='\\'){i++;continue;}if(c==="'"||c==='"')q=c;else if(c==='#'&&(i===0||/\s/.test(txt[i-1])))while(i<txt.length&&txt[i]!=='\n')i++;}return !!q;}
+P.run=function(line){var S=this.S;var full=S._cont!=null?S._cont+'\n'+line:line;
+  if(/\\$/.test(line)&&!/\\\\$/.test(line)&&!quoteOpen(full.slice(0,-1))){S._cont=full.slice(0,-1);S._contJoin=1;return {lines:[],out:'',rc:S.rc||0,cmd:line,cont:true};}
+  if(S._contJoin&&S._cont!=null){full=S._cont+line;}
+  S._contJoin=0;
+  if((quoteOpen(full)||incomplete(full))&&full.split('\n').length<200){S._cont=full;return {lines:[],out:'',rc:S.rc||0,cmd:line,cont:true};}
+  S._cont=null;var r=prevRun.call(this,full);r.cmd=line;return r;};
+P.prompt=function(){if(this.S._cont!=null)return {user:'',host:'',dir:'',sym:'> ',text:'> ',cont:true};return prevPrompt.call(this);};
+})();
+
 /* gamification: shared app namespace, store, XP/levels/badges/streak, toasts, confetti, dashboard */
 (function(){'use strict';
 var EL=window.EL=window.EL||{};
@@ -8318,7 +8856,7 @@ var T=EL.term={};var sim,out,inp,promptEl,drawer,fab,hist=[],hpos=-1,queue=[],dr
 function newSim(){var saved=EL.load(SKEY,null);try{sim=new ELSim(saved);}catch(e){sim=new ELSim(null);}T.sim=EL.sim=sim;}
 function saveSim(){EL.save(SKEY,sim.S);}
 T.save=saveSim;
-function promptHTML(){var p=sim.prompt();return '<span class="pu">'+esc(p.user+'@'+p.host)+'</span>:<span class="pd">'+esc(p.dir)+'</span>'+esc(p.sym)+' ';}
+function promptHTML(){var p=sim.prompt();if(p.cont)return '<span class="pd">&gt;</span> ';return '<span class="pu">'+esc(p.user+'@'+p.host)+'</span>:<span class="pd">'+esc(p.dir)+'</span>'+esc(p.sym)+' ';}
 function print(html,cls){var d=h('div',{class:'tln'+(cls?' '+cls:'')},html);out.appendChild(d);while(out.childNodes.length>800)out.removeChild(out.firstChild);out.scrollTop=out.scrollHeight;}
 T.print=function(text,cls){print(esc(text),cls);};
 function render(r){var buf='';r.lines.forEach(function(l){var t=l.t;if(t.indexOf('\x1b[CLEAR]')>=0){out.innerHTML='';t=t.split('\x1b[CLEAR]').pop();}if(!t)return;var d=h('div',{class:'tln o'+(l.e?' err':'')});d.textContent=t.replace(/\n$/,'');out.appendChild(d);});out.scrollTop=out.scrollHeight;}
@@ -8345,7 +8883,7 @@ function key(e){if(e.key==='Enter'){e.preventDefault();var v=inp.value;inp.value
   if(e.key==='Tab'){e.preventDefault();complete();return;}
   if(e.key==='ArrowUp'||e.key==='ArrowDown'){var H=sim.S.hist;if(!H.length)return;e.preventDefault();if(hpos<0){draft=inp.value;hpos=H.length;}hpos+=e.key==='ArrowUp'?-1:1;if(hpos<0)hpos=0;if(hpos>=H.length){hpos=-1;inp.value=draft;return;}inp.value=H[hpos];return;}
   if(e.ctrlKey&&(e.key==='l'||e.key==='L')){e.preventDefault();out.innerHTML='';return;}
-  if(e.ctrlKey&&(e.key==='c'||e.key==='C')&&inp.selectionStart===inp.selectionEnd){e.preventDefault();print(promptHTML()+esc(inp.value)+'^C','cmdl');inp.value='';queue=[];return;}
+  if(e.ctrlKey&&(e.key==='c'||e.key==='C')&&inp.selectionStart===inp.selectionEnd){e.preventDefault();print(promptHTML()+esc(inp.value)+'^C','cmdl');inp.value='';queue=[];if(sim&&sim.S._cont){sim.S._cont=null;updPrompt();}return;}
   if(e.ctrlKey&&(e.key==='u'||e.key==='U')){e.preventDefault();inp.value='';}
   if(e.key==='Escape'){T.close();}}
 function build(){if(!sim)newSim();
